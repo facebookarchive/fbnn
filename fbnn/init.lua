@@ -1,0 +1,10 @@
+require('torch')
+require('nn')
+require('libfbnn')
+
+include('Dropout.lua')
+include('Optim.lua')
+include('Probe.lua')
+include('TrueNLLCriterion.lua')
+include('SparseLinear.lua')
+include('test.lua')
