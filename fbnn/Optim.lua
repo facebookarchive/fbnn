@@ -1,7 +1,25 @@
 -- Copyright 2004-present Facebook. All Rights Reserved.
 
 local pl = require('pl.import_into')()
-local deepcopy = (require 'fb.util.data').deepcopy
+
+-- from fblualib/fb/util/data.lua , copied here because fblualib is not rockspec ready yet.
+-- deepcopy routine that assumes the presence of a 'clone' method in user
+-- data should be used to deeply copy. This matches the behavior of Torch
+-- tensors.
+local function deepcopy(x)
+    local typename = type(x)
+    if typename == "userdata" then
+        return x:clone()
+    end
+    if typename == "table" then
+        local retval = { }
+        for k,v in pairs(x) do
+            retval[deepcopy(k)] = deepcopy(v)
+        end
+        return retval
+    end
+    return x
+end
 
 local Optim, parent = torch.class('nn.Optim')
 

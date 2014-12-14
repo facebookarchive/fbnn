@@ -2,7 +2,7 @@ require('torch')
 require('nn')
 require('libfbnn')
 
-include('Dropout.lua')
+pcall(function() include('Dropout.lua') end) -- because uses async_rng
 include('Optim.lua')
 include('Probe.lua')
 include('TrueNLLCriterion.lua')

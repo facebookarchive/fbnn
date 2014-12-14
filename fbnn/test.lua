@@ -1,4 +1,9 @@
-require 'fb.luaunit'
+local ok = pcall(function() require 'fb.luaunit' end)
+if not ok then
+   print('For running tests, please manually install fb.luaunit from fblualib.')
+   print('fblualib does not have rockspecs yet')
+   return
+end
 require 'fbtorch'
 require 'nn'
 
