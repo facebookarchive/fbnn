@@ -40,9 +40,9 @@ function Optim.weight_bias_parameters(module)
     return {weight_params, bias_params}
 end
 
--- The regular optim package relies on getParameters, which is a
--- beastly abomination before all. This optim package uses separate
--- optim state for each submodule of a nn.Module.
+-- The regular `optim` package relies on `getParameters`, which is a
+-- beastly abomination before all. This `optim` package uses separate
+-- optim state for each submodule of a `nn.Module`.
 function Optim:__init(model, optState, checkpoint_data)
     assert(model)
     assert(checkpoint_data or optState)

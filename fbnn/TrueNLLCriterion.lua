@@ -1,5 +1,8 @@
 -- Copyright 2004-present Facebook. All Rights Reserved.
 
+--[[
+`TrueNLLCriterion` computes the negative log-loss criterion directly.
+]]
 local TrueNLLCriterion, parent = torch.class('nn.TrueNLLCriterion',
                                              'nn.Criterion')
 

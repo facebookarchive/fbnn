@@ -1,3 +1,8 @@
+
+--[[
+A faster variant of `nn.SparseLinear` that imposes stricter
+preconditions to speed up `updateParameters`.
+]]
 local SparseLinear, parent = torch.class('fbnn.SparseLinear', 'nn.SparseLinear')
 
 function SparseLinear:__init(inputSize, outputSize, useSparseUpdate)

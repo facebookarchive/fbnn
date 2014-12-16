@@ -1,15 +1,25 @@
 -- Copyright 2004-present Facebook. All Rights Reserved.
 
-local Dropout, Parent = torch.class('fbnn.Dropout', 'nn.Module')
 local async_rng = require('fb.torch.async_rng')
 local trace = require('fb.util.trace')
 
 -- Hack: store RNG externally so that we don't try to serialize it...
 local rngs = {}
+
 -- Weak keys, so we don't leak RNG objects if the corresponding Dropout
 -- objects are destroyed
 setmetatable(rngs, {__mode = 'k'})
 
+--[[
+A faster variant of `nn.Dropout` that uses the `fblualib` asynchronous RNG.
+]]
+local Dropout, Parent = torch.class('fbnn.Dropout', 'nn.Module')
+
+--[[
+Parameter:
+
+- `p`: the dropout probability (the probability that a given activation will be dropped)
+]]
 function Dropout:__init(p)
    Parent.__init(self)
    self.p = p or 0.5
