@@ -2,8 +2,13 @@
 
 Facebook's extensions to https://github.com/torch/nn.
 
-This is an early release version to allow the community early access.
-Expect rapid improvements (CMake scripts, LuaRocks, documentation, etc).
+Documentation for each of the modules can be found at the following link: https://facebook.github.io/fbnn/fbnn/
+
+You can install this package using luarocks with the following commands:
+```bash
+git clone https://github.com/facebook/fbnn.git && cd fbnn
+luarocks make rocks/fbnn-scm-1.rockspec
+```
 
 ## License
 
