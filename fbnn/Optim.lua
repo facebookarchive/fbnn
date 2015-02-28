@@ -148,11 +148,6 @@ function Optim:optimize(optimMethod, inputs, targets, criterion)
     local df_do = criterion:backward(output, targets)
     self.model:backward(inputs, df_do)
 
-    -- Combine gradients for data parallel models
-    if self.model._mixGrads then
-        self.model:_mixGrads()
-    end
-
     -- We'll set these in the loop that iterates over each module. Get them
     -- out here to be captured.
     local curGrad
