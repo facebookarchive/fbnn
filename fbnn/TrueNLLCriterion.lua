@@ -16,11 +16,11 @@ end
 
 function TrueNLLCriterion:updateOutput(input, target)
    if input:dim() == 1 then
-      self.output = -math.log(input[target])
+      self.output = -math.log(input[target] + eps)
    elseif input:dim() == 2 then
       local output = 0
       for i=1,target:size(1) do
-         output = output - math.log(input[i][target[i]])
+         output = output - math.log(input[i][target[i]] + eps)
       end
       if self.sizeAverage then
          output = output / target:size(1)
