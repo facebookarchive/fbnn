@@ -13,6 +13,12 @@ local mytester = torch.Tester()
 
 local fbnntest = {}
 
+local function assertTensorEq(a, b, epsilon)
+    local epsilon = epsilon or 0.000001
+    local diff = a - b
+    assert(diff:abs():max() < epsilon)
+end
+
 function fbnntest.Optim_weight_bias_parameters()
     local n = nn.Sequential()
     n:add(nn.Linear(10, 10))
@@ -43,6 +49,52 @@ function fbnntest.Optim_weight_bias_parameters()
                 mytester:assert(not params[2])
             end
         end
+    end
+end
+
+function fbnntest.CachingLookupTableCoherence()
+    -- Make sure that we don't lose writes even with multiple caches
+    -- attached
+    local function buildCaches(numCaches, rows, cacheRows, cols)
+        local lut = nn.LookupTable(rows, cols)
+        -- Nice, even values are easier to debug.
+        lut.weight = torch.range(1, rows * cols):reshape(rows, cols)
+        local caches = { }
+        for i = 1, numCaches do
+            table.insert(caches, nn.CachingLookupTable(lut, cacheRows, cols))
+        end
+        return lut, caches
+    end
+    local cases = {
+        -- rows, cols, cacheRows, numCaches, numUpdates
+        {  1,     1,    1,         1,         100, },
+        {  100,   10,   100,       2,         200, },
+        {  500,   100,  100,       2,         500 },
+        {  500,   100,  500,       2,         2000 },
+    }
+    for _,case in pairs(cases) do
+        print(case)
+        local rows, cols, cacheRows, numCaches, numUpdates = unpack(case)
+        local lut, caches = buildCaches(numCaches, rows, cacheRows, cols)
+        local lutClone = lut:clone()
+
+        for j = 1,numUpdates do
+            local start = math.random(rows)
+            local finish = math.min(start + math.random(100), rows)
+            local rows = torch.range(start, finish)
+            local n = rows:size(1)
+            local grad = torch.randn(n, cols)
+            lutClone:updateRows(rows, grad * -#caches)
+            for _,cache in ipairs(caches) do
+                assert(cache.accUpdateGradParameters ==
+                       nn.CachingLookupTable.accUpdateGradParameters)
+                cache:accUpdateGradParameters(rows, grad, 1.0)
+            end
+        end
+        for _,cache in ipairs(caches) do
+            cache:flush()
+        end
+        assertTensorEq(lutClone.weight, lut.weight)
     end
 end
 
