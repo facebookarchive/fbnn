@@ -8,12 +8,11 @@
 #include <memory>
 
 #include <lua.hpp>
-#include <mkl.h>
 #include <luaT.h>
 
 #include "Blas.h"
-#include "torch/fb/fbcunn/src/LuaUtils.h"
-#include "torch/fb/fbcunn/src/Tensor.h"
+#include "LuaUtils.h"
+#include "Tensor.h"
 #include "Vml.h"
 #include "folly/Format.h"
 

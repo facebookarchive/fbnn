@@ -4,7 +4,6 @@ if not ok then
    print('fblualib does not have rockspecs yet')
    return
 end
-require 'fbtorch'
 require 'nn'
 
 local pl = require'pl.import_into'()

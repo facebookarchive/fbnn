@@ -6,7 +6,9 @@
 #ifndef DEEPLEARNING_TORCH_BLAS_H_
 #define DEEPLEARNING_TORCH_BLAS_H_
 
+#ifdef USE_MKL
 #include <mkl.h>
+#endif
 #include "folly/Preprocessor.h"
 
 namespace facebook { namespace deeplearning { namespace torch { namespace blas {

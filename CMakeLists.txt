@@ -8,5 +8,7 @@ ENDIF()
 FIND_PACKAGE(Torch REQUIRED)
 
 FILE(GLOB luasrc fbnn/*.lua)
-SET(src "init.c")
+SET(src
+  init.c
+  )
 ADD_TORCH_PACKAGE(fbnn "${src}" "${luasrc}" "facebook's extensions to nn")
