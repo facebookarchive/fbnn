@@ -1,0 +1,46 @@
+<h3>CrossMapNormalization.lua</h3>
+
+<p>Copyright 2004-present Facebook. All Rights Reserved.</p>
+
+<p><a name="fbnn.CrossMapNormalization.dok"></a></p>
+
+<h2>fbnn.CrossMapNormalization</h2>
+
+<p>Cross-map normalization, see
+<a href="https://code.google.com/p/cuda-convnet/wiki/LayerParams#Local_response_normalization_layer_(across_maps)">https://code.google.com/p/cuda-convnet/wiki/LayerParams#Local_response_normalization_layer_(across_maps)</a></p>
+
+<p>formula:</p>
+
+<p><code>$${f(u_{f}^{x,y})=\frac{u_{f}^{x,y}}{ (1+\frac{\alpha}{N} \sum_{f&#39;=\max(0,F-\lfloor N/2\rfloor )}^{\min(F,f-\lfloor N/2 \rfloor+N) }(u_{f&#39;}^{x,y})^{2})^{\beta}}}$$</code> </p>
+
+<p>where</p>
+
+<ul>
+<li><code>${F}$</code> is the number of features, </li>
+<li><code>${N}$</code> is the neighborhood size (size),</li>
+<li><code>${\alpha}$</code> is the scaling factor (scale),</li>
+<li><code>${\beta}$</code> is the exponent (power)</li>
+</ul>
+
+<p>This layer normalizes values across feature maps (each spatial location
+independently). Borders are zero-padded.</p>
+
+<p>Parameters:</p>
+
+<ul>
+<li><code>size</code>: size of the neighborhood (typical value: 5)</li>
+<li><code>scale</code>: scaling factor (typical value: 0.0001)</li>
+<li><code>power</code>: exponent used (typical value: 0.75)</li>
+</ul>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.CrossMapNormalization"></a></p>
+
+<ul>
+<li><code>fbnn.CrossMapNormalization(size, scale, power)</code>
+<a name="fbnn.CrossMapNormalization:updateOutput"></a></li>
+<li><code>fbnn.CrossMapNormalization:updateOutput(input)</code>
+<a name="fbnn.CrossMapNormalization:updateGradInput"></a></li>
+<li><code>fbnn.CrossMapNormalization:updateGradInput(input, gradOutput)</code></li>
+</ul>

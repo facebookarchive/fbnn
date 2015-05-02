@@ -1,0 +1,1033 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="style.css">
+<title>fbnn - Documentation</title>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+      tex2jax: {
+          skipTags: ['script', 'noscript', 'style', 'textarea'],
+          displayMath: [['$${', '}$$']],
+          inlineMath: [['${', '}$']]
+      }
+  });
+  MathJax.Hub.Queue(function() {
+      // Fix <code> tags after MathJax finishes running. This is a
+      // hack to overcome a shortcoming of Markdown. Discussion at
+      // https://github.com/mojombo/jekyll/issues/199
+      var all = MathJax.Hub.getAllJax(), i;
+      for(i = 0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+  });
+</script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML"></script>
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/github.min.css">
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/highlight.min.js"></script>
+<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        $('pre code').each(function(i, e) {
+            var par = $(e).closest('pre');
+            if (! $(par).hasClass('has-jax')) {
+                hljs.highlightBlock(e);
+            }
+        });
+    });
+</script>
+
+
+
+<script src="../search.js"></script>
+<script type="text/javascript"> addSearchFormHeader(); </script>
+<script type="text/javascript">
+$(document).ready(function() {
+    /* Fix up any badly formed anchors */
+    $("a").each(function(i, e) {
+        if (!e.href) {
+            $(e).addClass('anchor');
+            var inner = $(e).html();
+            $(e).html("");
+            $(e).after(inner);
+        }
+    })
+})
+</script>
+</head>
+<body>
+<header>
+<ul>Navigation:
+<li><a href="../index.html">research-docs</a></li>
+<li><a href="https://github.com/facebook/fbnn">fbnn github</a></li>
+<li><a href="#">top of this page</a></li>
+</ul>
+</header>
+<div class="wrapper">
+<div id="navcontainer"><ul>
+<li>
+<ul>
+<li><a href="#fbnn.README.`fbnn`">`fbnn`</a>
+    <ul>
+    <li><a href="#fbnn.README.License">License</a></li>
+    </ul>
+</li>
+</ul>
+</li>
+<hr>
+       <li><a href="#fbnn.fbnn.dok">fbnn</a>
+       <ul>
+              <li><a href="#fbnn.fbnn.CachingLookupTable.dok">CachingLookupTable</a></li>
+              <li><a href="#fbnn.fbnn.ClassHierarchicalNLLCriterion.dok">ClassHierarchicalNLLCriterion</a></li>
+              <li><a href="#fbnn.fbnn.ClassNLLCriterionWithUNK.dok">ClassNLLCriterionWithUNK</a></li>
+              <li><a href="#fbnn.fbnn.CrossMapNormalization.dok">CrossMapNormalization</a></li>
+              <li><a href="#fbnn.fbnn.Dropout.dok">Dropout</a></li>
+              <li><a href="#fbnn.fbnn.GroupKMaxPooling.dok">GroupKMaxPooling</a></li>
+              <li><a href="#fbnn.fbnn.HSM.dok">HSM</a></li>
+              <li><a href="#fbnn.fbnn.KMaxPooling.dok">KMaxPooling</a></li>
+              <li><a href="#fbnn.fbnn.LinearNB.dok">LinearNB</a></li>
+              <li><a href="#fbnn.fbnn.LocallyConnected.dok">LocallyConnected</a></li>
+              <li><a href="#fbnn.fbnn.Optim.dok">Optim</a></li>
+              <li><a href="#fbnn.fbnn.Probe.dok">Probe</a></li>
+              <li><a href="#fbnn.fbnn.ProjectiveGradientNormalization.dok">ProjectiveGradientNormalization</a></li>
+              <li><a href="#fbnn.fbnn.SequentialCriterion.dok">SequentialCriterion</a></li>
+              <li><a href="#fbnn.fbnn.SparseConverter.dok">SparseConverter</a></li>
+              <li><a href="#fbnn.fbnn.SparseKmax.dok">SparseKmax</a></li>
+              <li><a href="#fbnn.fbnn.SparseLinear.dok">SparseLinear</a></li>
+              <li><a href="#fbnn.fbnn.SparseLookupTable.dok">SparseLookupTable</a></li>
+              <li><a href="#fbnn.fbnn.SparseNLLCriterion.dok">SparseNLLCriterion</a></li>
+              <li><a href="#fbnn.fbnn.SparseSum.dok">SparseSum</a></li>
+              <li><a href="#fbnn.fbnn.SparseThreshold.dok">SparseThreshold</a></li>
+              <li><a href="#fbnn.fbnn.TrueNLLCriterion.dok">TrueNLLCriterion</a></li>
+              <li><a href="#fbnn.fbnn.WeightedLookupTable.dok">WeightedLookupTable</a></li>
+       </ul>
+       </li>
+</ul>
+</div>
+<section>
+<div class='docSection'><a name="fbnn.README.dok"></a><p><a id="fbnn.README.`fbnn`"></a></p>
+
+<h1><code>fbnn</code></h1>
+
+<p>Facebook&#39;s extensions to <a href="https://github.com/torch/nn">https://github.com/torch/nn</a>.</p>
+
+<p>Documentation for each of the modules can be found at the following link: <a href="https://facebook.github.io/fbnn/fbnn/">https://facebook.github.io/fbnn/fbnn/</a></p>
+
+<p>You can install this package using luarocks with the following commands:</p>
+
+<pre><code class="bash">git clone https://github.com/facebook/fbnn.git &amp;&amp; cd fbnn
+luarocks make rocks/fbnn-scm-1.rockspec
+</code></pre>
+
+<p><a id="fbnn.README.License"></a></p>
+
+<h2>License</h2>
+
+<p><code>fbnn</code> is BSD-licensed. We also provide an additional patent
+grant.</p>
+</div><div class='docSection'><a name="fbnn.fbnn.CachingLookupTable.dok"></a><h3>CachingLookupTable.lua</h3>
+
+<p>Copyright 2004-present Facebook. All Rights Reserved.</p>
+
+<p><a name="fbnn.CachingLookupTable.dok"></a></p>
+
+<h2>fbnn.CachingLookupTable</h2>
+
+<p>The lookup table itself is a hash table of Ways.</p>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/CachingLookupTable.lua#L13">[src]</a>
+<a name="fbnn.Way"></a></p>
+
+<h3>fbnn.Way(size, backingStore, statsTab)</h3>
+
+<p>A way is a fully associative portion of the cache, with fixed
+capacity. Since we search it by brute-force, it needs to be
+modestly sized.</p>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/CachingLookupTable.lua#L259">[src]</a>
+<a name="fbnn.CachingLookupTable:zeroGradParameters"></a></p>
+
+<h3>fbnn.CachingLookupTable:zeroGradParameters()</h3>
+
+<p>For now we only support the accUpdateGradParameters usage pattern.</p>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.Way:updateRow"></a></p>
+
+<ul>
+<li><code>fbnn.Way:updateRow(row, addend, lr)</code>
+<a name="fbnn.Way:trim"></a></li>
+<li><code>fbnn.Way:trim()</code>
+<a name="fbnn.Way:flush"></a></li>
+<li><code>fbnn.Way:flush()</code>
+<a name="fbnn.Way:pull"></a></li>
+<li><code>fbnn.Way:pull(row)</code>
+<a name="fbnn.CachingLookupTable"></a></li>
+<li><code>fbnn.CachingLookupTable(backingLut, numRows)</code>
+<a name="fbnn.CachingLookupTable:flush"></a></li>
+<li><code>fbnn.CachingLookupTable:flush()</code>
+<a name="fbnn.CachingLookupTable:dumpStats"></a></li>
+<li><code>fbnn.CachingLookupTable:dumpStats()</code>
+<a name="fbnn.CachingLookupTable:notImplemented"></a></li>
+<li><code>fbnn.CachingLookupTable:notImplemented(name)</code>
+<a name="fbnn.CachingLookupTable:accUpdateOnly"></a></li>
+<li><code>fbnn.CachingLookupTable:accUpdateOnly()</code>
+<a name="fbnn.CachingLookupTable:reset"></a></li>
+<li><code>fbnn.CachingLookupTable:reset(stdv)</code>
+<a name="fbnn.CachingLookupTable:readRow"></a></li>
+<li><code>fbnn.CachingLookupTable:readRow(row)</code>
+<a name="fbnn.CachingLookupTable:writeRow"></a></li>
+<li><code>fbnn.CachingLookupTable:writeRow(row, val)</code>
+<a name="fbnn.CachingLookupTable:updateRow"></a></li>
+<li><code>fbnn.CachingLookupTable:updateRow(row, val, lr)</code>
+<a name="fbnn.CachingLookupTable:updateRows"></a></li>
+<li><code>fbnn.CachingLookupTable:updateRows(rows, val)</code>
+<a name="fbnn.CachingLookupTable:updateOutput"></a></li>
+<li><code>fbnn.CachingLookupTable:updateOutput(input)</code>
+<a name="fbnn.CachingLookupTable:accGradParameters"></a></li>
+<li><code>fbnn.CachingLookupTable:accGradParameters()</code>
+<a name="fbnn.CachingLookupTable:updateParameters"></a></li>
+<li><code>fbnn.CachingLookupTable:updateParameters(lr)</code>
+<a name="fbnn.CachingLookupTable:type"></a></li>
+<li><code>fbnn.CachingLookupTable:type(type)</code>
+<a name="fbnn.CachingLookupTable:accUpdateGradParameters"></a></li>
+<li><code>fbnn.CachingLookupTable:accUpdateGradParameters(input, gradOutput, lr)</code></li>
+</ul>
+</div><div class='docSection'><a name="fbnn.fbnn.ClassHierarchicalNLLCriterion.dok"></a><h3>ClassHierarchicalNLLCriterion.lua</h3>
+
+<p>Copyright 2004-present Facebook. All Rights Reserved.</p>
+
+<p><a name="fbnn.ClassHierarchicalNLLCriterion.dok"></a></p>
+
+<h2>fbnn.ClassHierarchicalNLLCriterion</h2>
+
+<p>Hierarchical softmax classifier with two levels and arbitrary clusters.</p>
+
+<p>Note:
+This criterion does include the lower layer parameters
+(this is more <code>Linear</code> + <code>ClassNLLCriterion</code>, but hierarchical).
+Also, this layer does not support the use of mini-batches
+(only 1 sample at the time).</p>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/ClassHierarchicalNLLCriterion.lua#L25">[src]</a>
+<a name="fbnn.ClassHierarchicalNLLCriterion"></a></p>
+
+<h3>fbnn.ClassHierarchicalNLLCriterion(mapping, clusterCounts, inputSize)</h3>
+
+<p>Parameters:</p>
+
+<ul>
+<li><code>mapping</code> is a tensor with as many elements as classes.
+<code>mapping[i][1]</code> stores the cluster id, and <code>mapping[i][2]</code> the class id within
+that cluster of the <code>${i}$</code> th class.</li>
+<li><code>clusterCounts</code> is a vector with as many entry as clusters.
+clusterCounts[i] stores the number of classes in the i-th cluster.</li>
+<li> <code>inputSize</code> is the number of input features</li>
+</ul>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/ClassHierarchicalNLLCriterion.lua#L66">[src]</a>
+<a name="fbnn.ClassHierarchicalNLLCriterion:updateOutput"></a></p>
+
+<h3>fbnn.ClassHierarchicalNLLCriterion:updateOutput(input, target)</h3>
+
+<p><code>target</code> is the class id</p>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/ClassHierarchicalNLLCriterion.lua#L112">[src]</a>
+<a name="fbnn.ClassHierarchicalNLLCriterion:updateGradInput"></a></p>
+
+<h3>fbnn.ClassHierarchicalNLLCriterion:updateGradInput(input, target)</h3>
+
+<p>This computes derivatives w.r.t. input and parameters.</p>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/ClassHierarchicalNLLCriterion.lua#L138">[src]</a>
+<a name="fbnn.ClassHierarchicalNLLCriterion:updateParameters"></a></p>
+
+<h3>fbnn.ClassHierarchicalNLLCriterion:updateParameters(learningRate)</h3>
+
+<p>Update parameters (only those that are used to process this sample).</p>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/ClassHierarchicalNLLCriterion.lua#L150">[src]</a>
+<a name="fbnn.sampleMultiNomial"></a></p>
+
+<h3>fbnn.sampleMultiNomial(input)</h3>
+
+<p>input is a vector of probabilities (non-negative and sums to 1).</p>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/ClassHierarchicalNLLCriterion.lua#L164">[src]</a>
+<a name="fbnn.ClassHierarchicalNLLCriterion:infer"></a></p>
+
+<h3>fbnn.ClassHierarchicalNLLCriterion:infer(input, sampling)</h3>
+
+<p>Inference of the output (to be used at test time only)
+If sampling flag is set to true, then the output label is sampled
+o/w the most likely class is provided.</p>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/ClassHierarchicalNLLCriterion.lua#L202">[src]</a>
+<a name="fbnn.ClassHierarchicalNLLCriterion:eval"></a></p>
+
+<h3>fbnn.ClassHierarchicalNLLCriterion:eval(input, target)</h3>
+
+<p>Given some label, it computes the logprob and the ranking error.</p>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.ClassHierarchicalNLLCriterion:zeroGradParameters"></a></p>
+
+<ul>
+<li><code>fbnn.ClassHierarchicalNLLCriterion:zeroGradParameters()</code>
+<a name="fbnn.ClassHierarchicalNLLCriterion:zeroGradParametersCluster"></a></li>
+<li><code>fbnn.ClassHierarchicalNLLCriterion:zeroGradParametersCluster()</code>
+<a name="fbnn.ClassHierarchicalNLLCriterion:zeroGradParametersClass"></a></li>
+<li><code>fbnn.ClassHierarchicalNLLCriterion:zeroGradParametersClass(target)</code></li>
+</ul>
+</div><div class='docSection'><a name="fbnn.fbnn.ClassNLLCriterionWithUNK.dok"></a><h3>ClassNLLCriterionWithUNK.lua</h3>
+
+<p>Copyright 2004-present Facebook. All Rights Reserved.
+Author: Michael Mathieu <a href="mailto:myrhev@fb.com">myrhev@fb.com</a></p>
+
+<p><a name="fbnn.ClassNLLCriterionWithUNK.dok"></a></p>
+
+<h2>fbnn.ClassNLLCriterionWithUNK</h2>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.ClassNLLCriterionWithUNK"></a></p>
+
+<ul>
+<li><code>fbnn.ClassNLLCriterionWithUNK(unk_index, sizeAverage)</code>
+<a name="fbnn.ClassNLLCriterionWithUNK:cuda"></a></li>
+<li><code>fbnn.ClassNLLCriterionWithUNK:cuda()</code>
+<a name="fbnn.ClassNLLCriterionWithUNK:updateOutput"></a></li>
+<li><code>fbnn.ClassNLLCriterionWithUNK:updateOutput(input, target)</code>
+<a name="fbnn.ClassNLLCriterionWithUNK:updateGradInput"></a></li>
+<li><code>fbnn.ClassNLLCriterionWithUNK:updateGradInput(input, target)</code></li>
+</ul>
+</div><div class='docSection'><a name="fbnn.fbnn.CrossMapNormalization.dok"></a><h3>CrossMapNormalization.lua</h3>
+
+<p>Copyright 2004-present Facebook. All Rights Reserved.</p>
+
+<p><a name="fbnn.CrossMapNormalization.dok"></a></p>
+
+<h2>fbnn.CrossMapNormalization</h2>
+
+<p>Cross-map normalization, see
+<a href="https://code.google.com/p/cuda-convnet/wiki/LayerParams#Local_response_normalization_layer_(across_maps)">https://code.google.com/p/cuda-convnet/wiki/LayerParams#Local_response_normalization_layer_(across_maps)</a></p>
+
+<p>formula:</p>
+
+<p><code>$${f(u_{f}^{x,y})=\frac{u_{f}^{x,y}}{ (1+\frac{\alpha}{N} \sum_{f&#39;=\max(0,F-\lfloor N/2\rfloor )}^{\min(F,f-\lfloor N/2 \rfloor+N) }(u_{f&#39;}^{x,y})^{2})^{\beta}}}$$</code> </p>
+
+<p>where</p>
+
+<ul>
+<li><code>${F}$</code> is the number of features, </li>
+<li><code>${N}$</code> is the neighborhood size (size),</li>
+<li><code>${\alpha}$</code> is the scaling factor (scale),</li>
+<li><code>${\beta}$</code> is the exponent (power)</li>
+</ul>
+
+<p>This layer normalizes values across feature maps (each spatial location
+independently). Borders are zero-padded.</p>
+
+<p>Parameters:</p>
+
+<ul>
+<li><code>size</code>: size of the neighborhood (typical value: 5)</li>
+<li><code>scale</code>: scaling factor (typical value: 0.0001)</li>
+<li><code>power</code>: exponent used (typical value: 0.75)</li>
+</ul>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.CrossMapNormalization"></a></p>
+
+<ul>
+<li><code>fbnn.CrossMapNormalization(size, scale, power)</code>
+<a name="fbnn.CrossMapNormalization:updateOutput"></a></li>
+<li><code>fbnn.CrossMapNormalization:updateOutput(input)</code>
+<a name="fbnn.CrossMapNormalization:updateGradInput"></a></li>
+<li><code>fbnn.CrossMapNormalization:updateGradInput(input, gradOutput)</code></li>
+</ul>
+</div><div class='docSection'><a name="fbnn.fbnn.Dropout.dok"></a><h3>Dropout.lua</h3>
+
+<p>Copyright 2004-present Facebook. All Rights Reserved.</p>
+
+<p><a name="fbnn.Dropout.dok"></a></p>
+
+<h2>fbnn.Dropout</h2>
+
+<p>A faster variant of <code>nn.Dropout</code> that uses the <code>fblualib</code> asynchronous RNG.</p>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/Dropout.lua#L23">[src]</a>
+<a name="fbnn.Dropout"></a></p>
+
+<h3>fbnn.Dropout(p)</h3>
+
+<p>Parameter:</p>
+
+<ul>
+<li><code>p</code>: the dropout probability (the probability that a given activation will be dropped)</li>
+</ul>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.Dropout:updateOutput"></a></p>
+
+<ul>
+<li><code>fbnn.Dropout:updateOutput(input)</code>
+<a name="fbnn.Dropout:updateGradInput"></a></li>
+<li><code>fbnn.Dropout:updateGradInput(input, gradOutput)</code>
+<a name="fbnn.Dropout:setp"></a></li>
+<li><code>fbnn.Dropout:setp(p)</code></li>
+</ul>
+</div><div class='docSection'><a name="fbnn.fbnn.GroupKMaxPooling.dok"></a><h3>GroupKMaxPooling.lua</h3>
+
+<p>Copyright 2004-present Facebook. All Rights Reserved.</p>
+
+<p><a name="fbnn.GroupKMaxPooling.dok"></a></p>
+
+<h2>fbnn.GroupKMaxPooling</h2>
+
+<p>Group k-max pooling performs pooling along a dimension of arbitrary length
+(e.g. a sentence) down to a length of <code>${k}$</code> </p>
+
+<p>Given a matrix where rows are words and columns are embedding dimensions, we
+compute the <code>${L^2}$</code> norm of each word:</p>
+
+<pre><code>   o---------o
+w1 |         | -&gt; norm1
+w2 |         | -&gt; norm2
+w3 |         | -&gt; norm3
+w4 |         | -&gt; norm4
+   o---------o
+</code></pre>
+
+<p>Group K-max pooling keeps the K words with largest norm and discards the
+rest.</p>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.GroupKMaxPooling"></a></p>
+
+<ul>
+<li><code>fbnn.GroupKMaxPooling(k, k_dynamic)</code>
+<a name="fbnn.GroupKMaxPooling:updateOutput"></a></li>
+<li><code>fbnn.GroupKMaxPooling:updateOutput(input)</code>
+<a name="fbnn.GroupKMaxPooling:updateGradInput"></a></li>
+<li><code>fbnn.GroupKMaxPooling:updateGradInput(input, gradOutput)</code></li>
+</ul>
+</div><div class='docSection'><a name="fbnn.fbnn.HSM.dok"></a><h3>HSM.lua</h3>
+
+<p>Copyright 2004-present Facebook. All Rights Reserved.
+Author: Michael Mathieu <a href="mailto:myrhev@fb.com">myrhev@fb.com</a></p>
+
+<p><a name="fbnn.HSM.dok"></a></p>
+
+<h2>fbnn.HSM</h2>
+
+<p>Hierarchical soft max with minibatches.</p>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/HSM.lua#L24">[src]</a>
+<a name="fbnn.HSM"></a></p>
+
+<h3>fbnn.HSM(mapping, input_size, unk_index)</h3>
+
+<p>Parameters:</p>
+
+<ul>
+<li><code>mapping</code> is a table (or tensor) with <code>n_classes</code> elements,
+such that <code>mapping[i]</code> is a table with 2 elements.
+
+<ul>
+<li><code>mapping[i][1]</code> : index (1-based) of the cluster of class <code>i</code></li>
+<li><code>mapping[i][2]</code> : index (1-based) of the index within its cluster of class <code>i</code></li>
+</ul></li>
+<li> <code>input_size</code> is the number of elements of the previous layer</li>
+<li> <code>unk_index</code> is an index that is ignored at test time (not added to the
+loss). It can be disabled by setting it to 0 (not nil).
+It should only be used uring testing (since during training,
+it is not disabled in the backprop (TODO) )</li>
+</ul>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/HSM.lua#L226">[src]</a>
+<a name="fbnn.HSM:updateGradInput"></a></p>
+
+<h3>fbnn.HSM:updateGradInput(input, target)</h3>
+
+<p>Note: call this function at most once after each call <code>updateOutput</code>,
+or the output will be wrong (it uses <code>class_score</code> and <code>cluster_score</code>
+as temporary buffers)</p>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/HSM.lua#L270">[src]</a>
+<a name="fbnn.HSM:accGradParameters"></a></p>
+
+<h3>fbnn.HSM:accGradParameters(input, target, scale, direct_update)</h3>
+
+<p>If <code>direct_update</code> is set, the parameters are directly updated (not the
+gradients). It means that the gradient tensors (like <code>cluster_grad_weight</code>)
+are not used. scale must be set to the negative learning rate
+(<code>-learning_rate</code>). <code>direct_update</code> mode is much faster.
+Before calling this function you have to call <code>HSM:updateGradInput</code> first.</p>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.HSM:clone"></a></p>
+
+<ul>
+<li><code>fbnn.HSM:clone(...)</code>
+<a name="fbnn.HSM:check_mapping"></a></li>
+<li><code>fbnn.HSM:check_mapping(mapping)</code>
+<a name="fbnn.HSM:get_n_class_in_cluster"></a></li>
+<li><code>fbnn.HSM:get_n_class_in_cluster(mapping)</code>
+<a name="fbnn.HSM:parameters"></a></li>
+<li><code>fbnn.HSM:parameters()</code>
+<a name="fbnn.HSM:getParameters"></a></li>
+<li><code>fbnn.HSM:getParameters()</code>
+<a name="fbnn.HSM:reset"></a></li>
+<li><code>fbnn.HSM:reset(weight_stdv, bias_stdv)</code>
+<a name="fbnn.HSM:updateOutput"></a></li>
+<li><code>fbnn.HSM:updateOutput(input, target)</code>
+<a name="fbnn.HSM:updateOutputCPU"></a></li>
+<li><code>fbnn.HSM:updateOutputCPU(input, target)</code>
+<a name="fbnn.HSM:updateOutputCUDA"></a></li>
+<li><code>fbnn.HSM:updateOutputCUDA(input, target)</code>
+<a name="fbnn.HSM:updateGradInputCPU"></a></li>
+<li><code>fbnn.HSM:updateGradInputCPU(input, target)</code>
+<a name="fbnn.HSM:updateGradInputCUDA"></a></li>
+<li><code>fbnn.HSM:updateGradInputCUDA(input, target)</code>
+<a name="fbnn.HSM:backward"></a></li>
+<li><code>fbnn.HSM:backward(input, target, scale)</code>
+<a name="fbnn.HSM:updateParameters"></a></li>
+<li><code>fbnn.HSM:updateParameters(learning_rate)</code>
+<a name="fbnn.HSM:zeroGradParameters"></a></li>
+<li><code>fbnn.HSM:zeroGradParameters()</code>
+<a name="fbnn.HSM:zeroGradParametersClass"></a></li>
+<li><code>fbnn.HSM:zeroGradParametersClass(input, target)</code></li>
+</ul>
+</div><div class='docSection'><a name="fbnn.fbnn.KMaxPooling.dok"></a><p><a name="fbnn.KMaxPooling.dok"></a></p>
+
+<h2>fbnn.KMaxPooling</h2>
+
+<p>Copyright 2004-present Facebook. All Rights Reserved.</p>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.KMaxPooling"></a></p>
+
+<ul>
+<li><code>fbnn.KMaxPooling(k, k_dynamic)</code>
+<a name="fbnn.KMaxPooling:updateOutput"></a></li>
+<li><code>fbnn.KMaxPooling:updateOutput(input, input_info)</code>
+<a name="fbnn.KMaxPooling:updateGradInput"></a></li>
+<li><code>fbnn.KMaxPooling:updateGradInput(input, gradOutput)</code></li>
+</ul>
+</div><div class='docSection'><a name="fbnn.fbnn.LinearNB.dok"></a><p><a name="fbnn.LinearNB.dok"></a></p>
+
+<h2>fbnn.LinearNB</h2>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.LinearNB"></a></p>
+
+<ul>
+<li><code>fbnn.LinearNB(inputSize, outputSize)</code>
+<a name="fbnn.LinearNB:reset"></a></li>
+<li><code>fbnn.LinearNB:reset(stdv)</code>
+<a name="fbnn.LinearNB:updateOutput"></a></li>
+<li><code>fbnn.LinearNB:updateOutput(input)</code>
+<a name="fbnn.LinearNB:updateGradInput"></a></li>
+<li><code>fbnn.LinearNB:updateGradInput(input, gradOutput)</code>
+<a name="fbnn.LinearNB:accGradParameters"></a></li>
+<li><code>fbnn.LinearNB:accGradParameters(input, gradOutput, scale)</code></li>
+</ul>
+</div><div class='docSection'><a name="fbnn.fbnn.LocallyConnected.dok"></a><h3>LocallyConnected.lua</h3>
+
+<p>Copyright 2004-present Facebook. All Rights Reserved.</p>
+
+<p><a name="fbnn.LocallyConnected.dok"></a></p>
+
+<h2>fbnn.LocallyConnected</h2>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/LocallyConnected.lua#L141">[src]</a>
+<a name="fbnn.LocallyConnected.toInterleaved"></a></p>
+
+<h3>fbnn.LocallyConnected.toInterleaved(tensor, make_contiguous)</h3>
+
+<p>Change a 3-d or 4-d tensor from standard, planar Torch layout (P x H x W) or
+(B x P x H x W) to interleaved layout (H x W x P) or (B x H x W x P).
+Change a 6-d weight tensor from planar (P_o x H_o x W_o x P_i x H_k x W_k) to
+interleaved format (H_o x W_o x H_k x W_k x P_o x P_i). The make_contiguous
+flag controls if the result tensor is guaranteed to be contiguous.</p>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/LocallyConnected.lua#L169">[src]</a>
+<a name="fbnn.LocallyConnected.toPlanar"></a></p>
+
+<h3>fbnn.LocallyConnected.toPlanar(tensor, make_contiguous)</h3>
+
+<p>Inverse operation of toInterleaved.</p>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/LocallyConnected.lua#L192">[src]</a>
+<a name="fbnn.LocallyConnected:type"></a></p>
+
+<h3>fbnn.LocallyConnected:type(type)</h3>
+
+<p>Type conversion.
+The trick here is to convert the various tensors to and from
+cuda layout when a conversion to or from host to GPU takes place.</p>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.LocallyConnected"></a></p>
+
+<ul>
+<li><code>fbnn.LocallyConnected(nInputPlane, iW, iH, nOutputPlane, kW, kH,
+                             dW, dH)</code>
+<a name="fbnn.LocallyConnected:outputSize"></a></li>
+<li><code>fbnn.LocallyConnected:outputSize()</code>
+<a name="fbnn.LocallyConnected:reset"></a></li>
+<li><code>fbnn.LocallyConnected:reset(stdv)</code>
+<a name="fbnn.LocallyConnected:updateOutput"></a></li>
+<li><code>fbnn.LocallyConnected:updateOutput(input)</code>
+<a name="fbnn.LocallyConnected:updateGradInput"></a></li>
+<li><code>fbnn.LocallyConnected:updateGradInput(input, gradOutput)</code>
+<a name="fbnn.LocallyConnected:accGradParameters"></a></li>
+<li><code>fbnn.LocallyConnected:accGradParameters(input, gradOutput, scale)</code></li>
+</ul>
+</div><div class='docSection'><a name="fbnn.fbnn.Optim.dok"></a><h3>Optim.lua</h3>
+
+<p>Copyright 2004-present Facebook. All Rights Reserved.</p>
+
+<p><a name="fbnn.Optim.dok"></a></p>
+
+<h2>fbnn.Optim</h2>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/Optim.lua#L28">[src]</a>
+<a name="fbnn.Optim.weight_bias_parameters"></a></p>
+
+<h3>fbnn.Optim.weight_bias_parameters(module)</h3>
+
+<p>Returns weight parameters and bias parameters and associated grad parameters
+for this module. Annotates the return values with flag marking parameter set
+as bias parameters set</p>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/Optim.lua#L44">[src]</a>
+<a name="fbnn.Optim"></a></p>
+
+<h3>fbnn.Optim(model, optState, checkpoint_data)</h3>
+
+<p>The regular <code>optim</code> package relies on <code>getParameters</code>, which is a
+beastly abomination before all. This <code>optim</code> package uses separate
+optim state for each submodule of a <code>nn.Module</code>.</p>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.Optim:save"></a></p>
+
+<ul>
+<li><code>fbnn.Optim:save()</code>
+<a name="fbnn.Optim:type"></a></li>
+<li><code>fbnn.Optim:type(t)</code>
+<a name="fbnn.Optim:optimize"></a></li>
+<li><code>fbnn.Optim:optimize(optimMethod, inputs, targets, criterion)</code>
+<a name="fbnn.Optim:setParameters"></a></li>
+<li><code>fbnn.Optim:setParameters(newParams)</code></li>
+</ul>
+</div><div class='docSection'><a name="fbnn.fbnn.Probe.dok"></a><p><a name="fbnn.Probe.dok"></a></p>
+
+<h2>fbnn.Probe</h2>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.Probe"></a></p>
+
+<ul>
+<li><code>fbnn.Probe(module, name)</code>
+<a name="fbnn.Probe:reset"></a></li>
+<li><code>fbnn.Probe:reset(stdv)</code>
+<a name="fbnn.Probe:resetTensors"></a></li>
+<li><code>fbnn.Probe:resetTensors()</code>
+<a name="fbnn.Probe:setTensors"></a></li>
+<li><code>fbnn.Probe:setTensors()</code>
+<a name="fbnn.Probe:dumpModule"></a></li>
+<li><code>fbnn.Probe:dumpModule(name, input, ...)</code>
+<a name="fbnn.Probe:updateOutput"></a></li>
+<li><code>fbnn.Probe:updateOutput(input)</code>
+<a name="fbnn.Probe:updateGradInput"></a></li>
+<li><code>fbnn.Probe:updateGradInput(input, gradOutput)</code>
+<a name="fbnn.Probe:accGradParameters"></a></li>
+<li><code>fbnn.Probe:accGradParameters(input, gradOutput, scale)</code></li>
+</ul>
+</div><div class='docSection'><a name="fbnn.fbnn.ProjectiveGradientNormalization.dok"></a><p><a name="fbnn.ProjectiveGradientNormalization.dok"></a></p>
+
+<h2>fbnn.ProjectiveGradientNormalization</h2>
+
+<p>This file implements a projective gradient normalization proposed by Mark Tygert.
+   This alters the network from doing true back-propagation.</p>
+
+<p>The operation implemented is:
+   forward:
+              Y = X
+   backward:
+              dL     dL        X      {     X          dL   }
+              --  =  --   -  ----  *  |   ----    (.)  --   |
+              dX     dY      ||X||    {   ||X||        dY   }
+                                  2            2</p>
+
+<p>where (.) = dot product</p>
+
+<p>Usage:
+   fbnn.ProjectiveGradientNormalization([eps = 1e-5]) -- eps is optional defaulting to 1e-5</p>
+
+<p>eps is a small value added to the ||X|| to avoid divide by zero
+       Defaults to 1e-5</p>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.BN"></a></p>
+
+<ul>
+<li><code>fbnn.BN(eps)</code>
+<a name="fbnn.BN:updateOutput"></a></li>
+<li><code>fbnn.BN:updateOutput(input)</code>
+<a name="fbnn.BN:updateGradInput"></a></li>
+<li><code>fbnn.BN:updateGradInput(input, gradOutput)</code></li>
+</ul>
+</div><div class='docSection'><a name="fbnn.fbnn.SequentialCriterion.dok"></a><h3>SequentialCriterion.lua</h3>
+
+<p>Copyright 2004-present Facebook. All Rights Reserved.
+Author: Michael Mathieu <a href="mailto:myrhev@fb.com">myrhev@fb.com</a></p>
+
+<p><a name="fbnn.SequentialCriterion.dok"></a></p>
+
+<h2>fbnn.SequentialCriterion</h2>
+
+<p>Combines a module and a criterion.</p>
+
+<p>It is mainly thought for preprocessing, but trainable parameters
+can be used if needed</p>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.SequentialCriterion"></a></p>
+
+<ul>
+<li><code>fbnn.SequentialCriterion(module, criterion)</code>
+<a name="fbnn.SequentialCriterion:parameters"></a></li>
+<li><code>fbnn.SequentialCriterion:parameters()</code>
+<a name="fbnn.SequentialCriterion:getParameters"></a></li>
+<li><code>fbnn.SequentialCriterion:getParameters()</code>
+<a name="fbnn.SequentialCriterion:updateOutput"></a></li>
+<li><code>fbnn.SequentialCriterion:updateOutput(input, target)</code>
+<a name="fbnn.SequentialCriterion:updateGradInput"></a></li>
+<li><code>fbnn.SequentialCriterion:updateGradInput(input, target)</code>
+<a name="fbnn.SequentialCriterion:accGradParameters"></a></li>
+<li><code>fbnn.SequentialCriterion:accGradParameters(input, target, scale)</code>
+<a name="fbnn.SequentialCriterion:accUpdateGradParameters"></a></li>
+<li><code>fbnn.SequentialCriterion:accUpdateGradParameters(input, target, scale)</code>
+<a name="fbnn.SequentialCriterion:updateParameters"></a></li>
+<li><code>fbnn.SequentialCriterion:updateParameters(learning_rate)</code>
+<a name="fbnn.SequentialCriterion:zeroGradParameters"></a></li>
+<li><code>fbnn.SequentialCriterion:zeroGradParameters()</code></li>
+</ul>
+</div><div class='docSection'><a name="fbnn.fbnn.SparseConverter.dok"></a><p><a name="fbnn.SparseConverter.dok"></a></p>
+
+<h2>fbnn.SparseConverter</h2>
+
+<p>Copyright 2004-present Facebook. All Rights Reserved.</p>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/SparseConverter.lua#L14">[src]</a>
+<a name="fbnn.SparseConverter"></a></p>
+
+<h3>fbnn.SparseConverter(fconv,bconv,dim,thresh)</h3>
+
+<p>Parameters:</p>
+
+<ul>
+<li><code>fconv</code> - conversion to perform in fprop, either &#39;StoD&#39;,&#39;DtoS&#39; or nil</li>
+<li><code>bconv</code> - conversion to perform in bprop, either &#39;StoD&#39;,&#39;DtoS&#39; or nil</li>
+<li><code>dim</code> - number of dimensions</li>
+<li><code>thresh</code> - threshold for sparsifying (0 by default)</li>
+</ul>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.SparseConverter:updateOutput"></a></p>
+
+<ul>
+<li><code>fbnn.SparseConverter:updateOutput(input)</code>
+<a name="fbnn.SparseConverter:updateGradInput"></a></li>
+<li><code>fbnn.SparseConverter:updateGradInput(input, gradOutput)</code></li>
+</ul>
+</div><div class='docSection'><a name="fbnn.fbnn.SparseKmax.dok"></a><h3>SparseKmax.lua</h3>
+
+<p>Copyright 2004-present Facebook. All Rights Reserved.</p>
+
+<p><a name="fbnn.SparseKmax.dok"></a></p>
+
+<h2>fbnn.SparseKmax</h2>
+
+<p>This module performs a sparse embedding with the following process:</p>
+
+<ol>
+<li>Perform a dense embedding</li>
+<li>Apply a linear transformation (to high dimensional space)</li>
+<li>Make the output k-sparse</li>
+</ol>
+
+<p>The parameters of the dense embedding and the linear transformation are 
+learned. Since the fprop may be slow, we keep a candidate set for each word
+which consists of the most likely indices to be turned on after the k-max
+operation. We record the number of activations for each member of this set,
+and periodically resize it to keep only the most active indices. 
+Thus the initial training with large candidate sets will be slow, but will
+get faster and faster as we restrict their sizes.</p>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/SparseKmax.lua#L31">[src]</a>
+<a name="fbnn.SparseKmax"></a></p>
+
+<h3>fbnn.SparseKmax(vocabSize,nDenseDim,nSparseDim,k,nCandidates)</h3>
+
+<p>Parameters:</p>
+
+<ul>
+<li><code>vocabSize</code> - number of entries in the dense lookup table</li>
+<li><code>nDenseDim</code> - number of dimensions for initial dense embedding</li>
+<li><code>nSparseDim</code> - number of dimensions for final sparse embedding</li>
+<li><code>k</code> - number of nonzeros in sparse space</li>
+<li><code>nCandidates</code> - initial size of the candidate set</li>
+</ul>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/SparseKmax.lua#L93">[src]</a>
+<a name="fbnn.SparseKmax:updateCandidateSets"></a></p>
+
+<h3>fbnn.SparseKmax:updateCandidateSets(nCandidates)</h3>
+
+<p>Update the candidate set based on the counts of activations.
+<code>nCandidates</code> is the size of the new candidate sets.</p>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/SparseKmax.lua#L110">[src]</a>
+<a name="fbnn.SparseKmax:accUpdateGradParameters"></a></p>
+
+<h3>fbnn.SparseKmax:accUpdateGradParameters(input, gradOutput, lr)</h3>
+
+<p>Note, we assume <code>gradOutput</code> is sparse since the output is sparse as well.</p>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.SparseKmax:reset"></a></p>
+
+<ul>
+<li><code>fbnn.SparseKmax:reset(stdv)</code>
+<a name="fbnn.SparseKmax:updateOutput"></a></li>
+<li><code>fbnn.SparseKmax:updateOutput(input)</code></li>
+</ul>
+</div><div class='docSection'><a name="fbnn.fbnn.SparseLinear.dok"></a><p><a name="fbnn.SparseLinear.dok"></a></p>
+
+<h2>fbnn.SparseLinear</h2>
+
+<p>A faster variant of <code>nn.SparseLinear</code> that imposes stricter
+preconditions to speed up <code>updateParameters</code>.</p>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.SparseLinear"></a></p>
+
+<ul>
+<li><code>fbnn.SparseLinear(inputSize, outputSize, useSparseUpdate)</code>
+<a name="fbnn.SparseLinear:updateParameters"></a></li>
+<li><code>fbnn.SparseLinear:updateParameters(learningRate)</code>
+<a name="fbnn.SparseLinear:zeroGradParameters"></a></li>
+<li><code>fbnn.SparseLinear:zeroGradParameters()</code></li>
+</ul>
+</div><div class='docSection'><a name="fbnn.fbnn.SparseLookupTable.dok"></a><h3>SparseLookupTable.lua</h3>
+
+<p>Copyright 2004-present Facebook. All Rights Reserved.</p>
+
+<p><a name="fbnn.SparseLookupTable.dok"></a></p>
+
+<h2>fbnn.SparseLookupTable</h2>
+
+<p>Sparse lookup table. Similar to the regular LookupTable.lua module, 
+except for the following differences:</p>
+
+<ol>
+<li>The outputs are in sparse format.</li>
+<li>The inputs are pairs (i,w), so the output corresponding to index i
+is scaled by w.</li>
+<li>The indices are fixed, i.e. during a parameter update only the nonzero 
+coefficents are updated. This is to avoid having to create new indices, 
+which is expensive and may result in the weights no longer being sparse.</li>
+</ol>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/SparseLookupTable.lua#L23">[src]</a>
+<a name="fbnn.SparseLookupTable"></a></p>
+
+<h3>fbnn.SparseLookupTable(indices,sparseGrad)</h3>
+
+<p>Parameters:</p>
+
+<ul>
+<li><code>indices</code> is a 2D matrix of indices which will be nonzero.</li>
+<li><code>sparseGrad</code> indicates whether incoming gradients will be sparse or dense.</li>
+</ul>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.SparseLookupTable:reset"></a></p>
+
+<ul>
+<li><code>fbnn.SparseLookupTable:reset(stdv)</code>
+<a name="fbnn.SparseLookupTable:updateOutput"></a></li>
+<li><code>fbnn.SparseLookupTable:updateOutput(input)</code>
+<a name="fbnn.SparseLookupTable:accUpdateGradParameters"></a></li>
+<li><code>fbnn.SparseLookupTable:accUpdateGradParameters(input, gradOutput,lr)</code></li>
+</ul>
+</div><div class='docSection'><a name="fbnn.fbnn.SparseNLLCriterion.dok"></a><h3>SparseNLLCriterion.lua</h3>
+
+<p>Copyright 2004-present Facebook. All Rights Reserved.
+Author: Michael Mathieu <a href="mailto:myrhev@fb.com">myrhev@fb.com</a></p>
+
+<p><a name="fbnn.SparseNLLCriterion.dok"></a></p>
+
+<h2>fbnn.SparseNLLCriterion</h2>
+
+<p>Sparse ClassNLL criterion</p>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/SparseNLLCriterion.lua#L18">[src]</a>
+<a name="fbnn.SparseNLLCriterion"></a></p>
+
+<h3>fbnn.SparseNLLCriterion(K)</h3>
+
+<p>Parameters:</p>
+
+<ul>
+<li><code>K</code> : number of non-zero elements of the target</li>
+<li><code>do</code>_target_check : checks whether the target is a
+probability vector (default true)</li>
+<li><code>sizeAverage</code> : divides the error by the size of the minibatch</li>
+</ul>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/SparseNLLCriterion.lua#L38">[src]</a>
+<a name="fbnn.SparseNLLCriterion:updateOutput"></a></p>
+
+<h3>fbnn.SparseNLLCriterion:updateOutput(input, target)</h3>
+
+<p><code>target</code> should be a table containing two tensors :</p>
+
+<pre><code>target = {targetP, targetIdx}
+</code></pre>
+
+<p>where <code>targetP</code> are the probabilities associated to the indices <code>targetIdx</code>
+we assume <code>targetIdx</code> doesn&#39;t have twice the same number in the same sample.</p>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.SparseNLLCriterion:updateGradInput"></a></p>
+
+<ul>
+<li><code>fbnn.SparseNLLCriterion:updateGradInput(input, target)</code></li>
+</ul>
+</div><div class='docSection'><a name="fbnn.fbnn.SparseSum.dok"></a><h3>SparseSum.lua</h3>
+
+<p>Copyright 2004-present Facebook. All Rights Reserved.</p>
+
+<p><a name="fbnn.SparseSum.dok"></a></p>
+
+<h2>fbnn.SparseSum</h2>
+
+<p>Sum module for sparse vectors.</p>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.SparseSum"></a></p>
+
+<ul>
+<li><code>fbnn.SparseSum()</code>
+<a name="fbnn.SparseSum:updateOutput"></a></li>
+<li><code>fbnn.SparseSum:updateOutput(input)</code>
+<a name="fbnn.SparseSum:updateGradInput"></a></li>
+<li><code>fbnn.SparseSum:updateGradInput(input, gradOutput)</code></li>
+</ul>
+</div><div class='docSection'><a name="fbnn.fbnn.SparseThreshold.dok"></a><h3>SparseThreshold.lua</h3>
+
+<p>Copyright 2004-present Facebook. All Rights Reserved.</p>
+
+<p><a name="fbnn.SparseThreshold.dok"></a></p>
+
+<h2>fbnn.SparseThreshold</h2>
+
+<p>Same as Threshold module, for sparse vectors.</p>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.SparseThreshold"></a></p>
+
+<ul>
+<li><code>fbnn.SparseThreshold(th,v)</code>
+<a name="fbnn.SparseThreshold:updateOutput"></a></li>
+<li><code>fbnn.SparseThreshold:updateOutput(input)</code>
+<a name="fbnn.SparseThreshold:updateGradInput"></a></li>
+<li><code>fbnn.SparseThreshold:updateGradInput(input, gradOutput)</code></li>
+</ul>
+</div><div class='docSection'><a name="fbnn.fbnn.TrueNLLCriterion.dok"></a><h3>TrueNLLCriterion.lua</h3>
+
+<p>Copyright 2004-present Facebook. All Rights Reserved.</p>
+
+<p><a name="fbnn.TrueNLLCriterion.dok"></a></p>
+
+<h2>fbnn.TrueNLLCriterion</h2>
+
+<p><code>TrueNLLCriterion</code> computes the negative log-loss criterion directly.</p>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.TrueNLLCriterion"></a></p>
+
+<ul>
+<li><code>fbnn.TrueNLLCriterion()</code>
+<a name="fbnn.TrueNLLCriterion:updateOutput"></a></li>
+<li><code>fbnn.TrueNLLCriterion:updateOutput(input, target)</code>
+<a name="fbnn.TrueNLLCriterion:updateGradInput"></a></li>
+<li><code>fbnn.TrueNLLCriterion:updateGradInput(input, target)</code></li>
+</ul>
+</div><div class='docSection'><a name="fbnn.fbnn.WeightedLookupTable.dok"></a><h3>WeightedLookupTable.lua</h3>
+
+<p>Copyright 2004-present Facebook. All Rights Reserved.</p>
+
+<p><a name="fbnn.WeightedLookupTable.dok"></a></p>
+
+<h2>fbnn.WeightedLookupTable</h2>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/WeightedLookupTable.lua#L52">[src]</a>
+<a name="fbnn.WeightedLookupTable:updateOutput"></a></p>
+
+<h3>fbnn.WeightedLookupTable:updateOutput(input)</h3>
+
+<p>Parameters:</p>
+
+<ul>
+<li><code>Input</code> should be an n x 2 tensor where the first column is dictionary indexes
+and the second column is weights.</li>
+</ul>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.WeightedLookupTable"></a></p>
+
+<ul>
+<li><code>fbnn.WeightedLookupTable(nIndex, ...)</code>
+<a name="fbnn.WeightedLookupTable:reset"></a></li>
+<li><code>fbnn.WeightedLookupTable:reset(stdv)</code>
+<a name="fbnn.WeightedLookupTable:zeroGradParameters"></a></li>
+<li><code>fbnn.WeightedLookupTable:zeroGradParameters()</code>
+<a name="fbnn.WeightedLookupTable:accGradParameters"></a></li>
+<li><code>fbnn.WeightedLookupTable:accGradParameters(input, gradOutput, scale)</code>
+<a name="fbnn.WeightedLookupTable:accUpdateGradParameters"></a></li>
+<li><code>fbnn.WeightedLookupTable:accUpdateGradParameters(input, gradOutput, lr)</code>
+<a name="fbnn.WeightedLookupTable:updateParameters"></a></li>
+<li><code>fbnn.WeightedLookupTable:updateParameters(learningRate)</code></li>
+</ul>
+</div>
+</section>
+</div>
+</body>
+</html>

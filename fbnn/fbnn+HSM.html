@@ -1,0 +1,88 @@
+<h3>HSM.lua</h3>
+
+<p>Copyright 2004-present Facebook. All Rights Reserved.
+Author: Michael Mathieu <a href="mailto:myrhev@fb.com">myrhev@fb.com</a></p>
+
+<p><a name="fbnn.HSM.dok"></a></p>
+
+<h2>fbnn.HSM</h2>
+
+<p>Hierarchical soft max with minibatches.</p>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/HSM.lua#L24">[src]</a>
+<a name="fbnn.HSM"></a></p>
+
+<h3>fbnn.HSM(mapping, input_size, unk_index)</h3>
+
+<p>Parameters:</p>
+
+<ul>
+<li><code>mapping</code> is a table (or tensor) with <code>n_classes</code> elements,
+such that <code>mapping[i]</code> is a table with 2 elements.
+
+<ul>
+<li><code>mapping[i][1]</code> : index (1-based) of the cluster of class <code>i</code></li>
+<li><code>mapping[i][2]</code> : index (1-based) of the index within its cluster of class <code>i</code></li>
+</ul></li>
+<li> <code>input_size</code> is the number of elements of the previous layer</li>
+<li> <code>unk_index</code> is an index that is ignored at test time (not added to the
+loss). It can be disabled by setting it to 0 (not nil).
+It should only be used uring testing (since during training,
+it is not disabled in the backprop (TODO) )</li>
+</ul>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/HSM.lua#L226">[src]</a>
+<a name="fbnn.HSM:updateGradInput"></a></p>
+
+<h3>fbnn.HSM:updateGradInput(input, target)</h3>
+
+<p>Note: call this function at most once after each call <code>updateOutput</code>,
+or the output will be wrong (it uses <code>class_score</code> and <code>cluster_score</code>
+as temporary buffers)</p>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/HSM.lua#L270">[src]</a>
+<a name="fbnn.HSM:accGradParameters"></a></p>
+
+<h3>fbnn.HSM:accGradParameters(input, target, scale, direct_update)</h3>
+
+<p>If <code>direct_update</code> is set, the parameters are directly updated (not the
+gradients). It means that the gradient tensors (like <code>cluster_grad_weight</code>)
+are not used. scale must be set to the negative learning rate
+(<code>-learning_rate</code>). <code>direct_update</code> mode is much faster.
+Before calling this function you have to call <code>HSM:updateGradInput</code> first.</p>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.HSM:clone"></a></p>
+
+<ul>
+<li><code>fbnn.HSM:clone(...)</code>
+<a name="fbnn.HSM:check_mapping"></a></li>
+<li><code>fbnn.HSM:check_mapping(mapping)</code>
+<a name="fbnn.HSM:get_n_class_in_cluster"></a></li>
+<li><code>fbnn.HSM:get_n_class_in_cluster(mapping)</code>
+<a name="fbnn.HSM:parameters"></a></li>
+<li><code>fbnn.HSM:parameters()</code>
+<a name="fbnn.HSM:getParameters"></a></li>
+<li><code>fbnn.HSM:getParameters()</code>
+<a name="fbnn.HSM:reset"></a></li>
+<li><code>fbnn.HSM:reset(weight_stdv, bias_stdv)</code>
+<a name="fbnn.HSM:updateOutput"></a></li>
+<li><code>fbnn.HSM:updateOutput(input, target)</code>
+<a name="fbnn.HSM:updateOutputCPU"></a></li>
+<li><code>fbnn.HSM:updateOutputCPU(input, target)</code>
+<a name="fbnn.HSM:updateOutputCUDA"></a></li>
+<li><code>fbnn.HSM:updateOutputCUDA(input, target)</code>
+<a name="fbnn.HSM:updateGradInputCPU"></a></li>
+<li><code>fbnn.HSM:updateGradInputCPU(input, target)</code>
+<a name="fbnn.HSM:updateGradInputCUDA"></a></li>
+<li><code>fbnn.HSM:updateGradInputCUDA(input, target)</code>
+<a name="fbnn.HSM:backward"></a></li>
+<li><code>fbnn.HSM:backward(input, target, scale)</code>
+<a name="fbnn.HSM:updateParameters"></a></li>
+<li><code>fbnn.HSM:updateParameters(learning_rate)</code>
+<a name="fbnn.HSM:zeroGradParameters"></a></li>
+<li><code>fbnn.HSM:zeroGradParameters()</code>
+<a name="fbnn.HSM:zeroGradParametersClass"></a></li>
+<li><code>fbnn.HSM:zeroGradParametersClass(input, target)</code></li>
+</ul>

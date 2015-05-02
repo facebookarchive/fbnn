@@ -1,0 +1,36 @@
+<h3>GroupKMaxPooling.lua</h3>
+
+<p>Copyright 2004-present Facebook. All Rights Reserved.</p>
+
+<p><a name="fbnn.GroupKMaxPooling.dok"></a></p>
+
+<h2>fbnn.GroupKMaxPooling</h2>
+
+<p>Group k-max pooling performs pooling along a dimension of arbitrary length
+(e.g. a sentence) down to a length of <code>${k}$</code> </p>
+
+<p>Given a matrix where rows are words and columns are embedding dimensions, we
+compute the <code>${L^2}$</code> norm of each word:</p>
+
+<pre><code>   o---------o
+w1 |         | -&gt; norm1
+w2 |         | -&gt; norm2
+w3 |         | -&gt; norm3
+w4 |         | -&gt; norm4
+   o---------o
+</code></pre>
+
+<p>Group K-max pooling keeps the K words with largest norm and discards the
+rest.</p>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.GroupKMaxPooling"></a></p>
+
+<ul>
+<li><code>fbnn.GroupKMaxPooling(k, k_dynamic)</code>
+<a name="fbnn.GroupKMaxPooling:updateOutput"></a></li>
+<li><code>fbnn.GroupKMaxPooling:updateOutput(input)</code>
+<a name="fbnn.GroupKMaxPooling:updateGradInput"></a></li>
+<li><code>fbnn.GroupKMaxPooling:updateGradInput(input, gradOutput)</code></li>
+</ul>

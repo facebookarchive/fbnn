@@ -1,0 +1,69 @@
+<h3>CachingLookupTable.lua</h3>
+
+<p>Copyright 2004-present Facebook. All Rights Reserved.</p>
+
+<p><a name="fbnn.CachingLookupTable.dok"></a></p>
+
+<h2>fbnn.CachingLookupTable</h2>
+
+<p>The lookup table itself is a hash table of Ways.</p>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/CachingLookupTable.lua#L13">[src]</a>
+<a name="fbnn.Way"></a></p>
+
+<h3>fbnn.Way(size, backingStore, statsTab)</h3>
+
+<p>A way is a fully associative portion of the cache, with fixed
+capacity. Since we search it by brute-force, it needs to be
+modestly sized.</p>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/CachingLookupTable.lua#L259">[src]</a>
+<a name="fbnn.CachingLookupTable:zeroGradParameters"></a></p>
+
+<h3>fbnn.CachingLookupTable:zeroGradParameters()</h3>
+
+<p>For now we only support the accUpdateGradParameters usage pattern.</p>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.Way:updateRow"></a></p>
+
+<ul>
+<li><code>fbnn.Way:updateRow(row, addend, lr)</code>
+<a name="fbnn.Way:trim"></a></li>
+<li><code>fbnn.Way:trim()</code>
+<a name="fbnn.Way:flush"></a></li>
+<li><code>fbnn.Way:flush()</code>
+<a name="fbnn.Way:pull"></a></li>
+<li><code>fbnn.Way:pull(row)</code>
+<a name="fbnn.CachingLookupTable"></a></li>
+<li><code>fbnn.CachingLookupTable(backingLut, numRows)</code>
+<a name="fbnn.CachingLookupTable:flush"></a></li>
+<li><code>fbnn.CachingLookupTable:flush()</code>
+<a name="fbnn.CachingLookupTable:dumpStats"></a></li>
+<li><code>fbnn.CachingLookupTable:dumpStats()</code>
+<a name="fbnn.CachingLookupTable:notImplemented"></a></li>
+<li><code>fbnn.CachingLookupTable:notImplemented(name)</code>
+<a name="fbnn.CachingLookupTable:accUpdateOnly"></a></li>
+<li><code>fbnn.CachingLookupTable:accUpdateOnly()</code>
+<a name="fbnn.CachingLookupTable:reset"></a></li>
+<li><code>fbnn.CachingLookupTable:reset(stdv)</code>
+<a name="fbnn.CachingLookupTable:readRow"></a></li>
+<li><code>fbnn.CachingLookupTable:readRow(row)</code>
+<a name="fbnn.CachingLookupTable:writeRow"></a></li>
+<li><code>fbnn.CachingLookupTable:writeRow(row, val)</code>
+<a name="fbnn.CachingLookupTable:updateRow"></a></li>
+<li><code>fbnn.CachingLookupTable:updateRow(row, val, lr)</code>
+<a name="fbnn.CachingLookupTable:updateRows"></a></li>
+<li><code>fbnn.CachingLookupTable:updateRows(rows, val)</code>
+<a name="fbnn.CachingLookupTable:updateOutput"></a></li>
+<li><code>fbnn.CachingLookupTable:updateOutput(input)</code>
+<a name="fbnn.CachingLookupTable:accGradParameters"></a></li>
+<li><code>fbnn.CachingLookupTable:accGradParameters()</code>
+<a name="fbnn.CachingLookupTable:updateParameters"></a></li>
+<li><code>fbnn.CachingLookupTable:updateParameters(lr)</code>
+<a name="fbnn.CachingLookupTable:type"></a></li>
+<li><code>fbnn.CachingLookupTable:type(type)</code>
+<a name="fbnn.CachingLookupTable:accUpdateGradParameters"></a></li>
+<li><code>fbnn.CachingLookupTable:accUpdateGradParameters(input, gradOutput, lr)</code></li>
+</ul>

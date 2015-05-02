@@ -1,0 +1,45 @@
+<h3>SparseNLLCriterion.lua</h3>
+
+<p>Copyright 2004-present Facebook. All Rights Reserved.
+Author: Michael Mathieu <a href="mailto:myrhev@fb.com">myrhev@fb.com</a></p>
+
+<p><a name="fbnn.SparseNLLCriterion.dok"></a></p>
+
+<h2>fbnn.SparseNLLCriterion</h2>
+
+<p>Sparse ClassNLL criterion</p>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/SparseNLLCriterion.lua#L18">[src]</a>
+<a name="fbnn.SparseNLLCriterion"></a></p>
+
+<h3>fbnn.SparseNLLCriterion(K)</h3>
+
+<p>Parameters:</p>
+
+<ul>
+<li><code>K</code> : number of non-zero elements of the target</li>
+<li><code>do</code>_target_check : checks whether the target is a
+probability vector (default true)</li>
+<li><code>sizeAverage</code> : divides the error by the size of the minibatch</li>
+</ul>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/SparseNLLCriterion.lua#L38">[src]</a>
+<a name="fbnn.SparseNLLCriterion:updateOutput"></a></p>
+
+<h3>fbnn.SparseNLLCriterion:updateOutput(input, target)</h3>
+
+<p><code>target</code> should be a table containing two tensors :</p>
+
+<pre><code>target = {targetP, targetIdx}
+</code></pre>
+
+<p>where <code>targetP</code> are the probabilities associated to the indices <code>targetIdx</code>
+we assume <code>targetIdx</code> doesn&#39;t have twice the same number in the same sample.</p>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.SparseNLLCriterion:updateGradInput"></a></p>
+
+<ul>
+<li><code>fbnn.SparseNLLCriterion:updateGradInput(input, target)</code></li>
+</ul>

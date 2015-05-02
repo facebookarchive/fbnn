@@ -1,0 +1,35 @@
+<p><a name="fbnn.ProjectiveGradientNormalization.dok"></a></p>
+
+<h2>fbnn.ProjectiveGradientNormalization</h2>
+
+<p>This file implements a projective gradient normalization proposed by Mark Tygert.
+   This alters the network from doing true back-propagation.</p>
+
+<p>The operation implemented is:
+   forward:
+              Y = X
+   backward:
+              dL     dL        X      {     X          dL   }
+              --  =  --   -  ----  *  |   ----    (.)  --   |
+              dX     dY      ||X||    {   ||X||        dY   }
+                                  2            2</p>
+
+<p>where (.) = dot product</p>
+
+<p>Usage:
+   fbnn.ProjectiveGradientNormalization([eps = 1e-5]) -- eps is optional defaulting to 1e-5</p>
+
+<p>eps is a small value added to the ||X|| to avoid divide by zero
+       Defaults to 1e-5</p>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.BN"></a></p>
+
+<ul>
+<li><code>fbnn.BN(eps)</code>
+<a name="fbnn.BN:updateOutput"></a></li>
+<li><code>fbnn.BN:updateOutput(input)</code>
+<a name="fbnn.BN:updateGradInput"></a></li>
+<li><code>fbnn.BN:updateGradInput(input, gradOutput)</code></li>
+</ul>

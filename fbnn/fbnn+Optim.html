@@ -1,0 +1,39 @@
+<h3>Optim.lua</h3>
+
+<p>Copyright 2004-present Facebook. All Rights Reserved.</p>
+
+<p><a name="fbnn.Optim.dok"></a></p>
+
+<h2>fbnn.Optim</h2>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/Optim.lua#L28">[src]</a>
+<a name="fbnn.Optim.weight_bias_parameters"></a></p>
+
+<h3>fbnn.Optim.weight_bias_parameters(module)</h3>
+
+<p>Returns weight parameters and bias parameters and associated grad parameters
+for this module. Annotates the return values with flag marking parameter set
+as bias parameters set</p>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/Optim.lua#L44">[src]</a>
+<a name="fbnn.Optim"></a></p>
+
+<h3>fbnn.Optim(model, optState, checkpoint_data)</h3>
+
+<p>The regular <code>optim</code> package relies on <code>getParameters</code>, which is a
+beastly abomination before all. This <code>optim</code> package uses separate
+optim state for each submodule of a <code>nn.Module</code>.</p>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.Optim:save"></a></p>
+
+<ul>
+<li><code>fbnn.Optim:save()</code>
+<a name="fbnn.Optim:type"></a></li>
+<li><code>fbnn.Optim:type(t)</code>
+<a name="fbnn.Optim:optimize"></a></li>
+<li><code>fbnn.Optim:optimize(optimMethod, inputs, targets, criterion)</code>
+<a name="fbnn.Optim:setParameters"></a></li>
+<li><code>fbnn.Optim:setParameters(newParams)</code></li>
+</ul>

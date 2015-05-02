@@ -1,0 +1,53 @@
+<h3>LocallyConnected.lua</h3>
+
+<p>Copyright 2004-present Facebook. All Rights Reserved.</p>
+
+<p><a name="fbnn.LocallyConnected.dok"></a></p>
+
+<h2>fbnn.LocallyConnected</h2>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/LocallyConnected.lua#L141">[src]</a>
+<a name="fbnn.LocallyConnected.toInterleaved"></a></p>
+
+<h3>fbnn.LocallyConnected.toInterleaved(tensor, make_contiguous)</h3>
+
+<p>Change a 3-d or 4-d tensor from standard, planar Torch layout (P x H x W) or
+(B x P x H x W) to interleaved layout (H x W x P) or (B x H x W x P).
+Change a 6-d weight tensor from planar (P_o x H_o x W_o x P_i x H_k x W_k) to
+interleaved format (H_o x W_o x H_k x W_k x P_o x P_i). The make_contiguous
+flag controls if the result tensor is guaranteed to be contiguous.</p>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/LocallyConnected.lua#L169">[src]</a>
+<a name="fbnn.LocallyConnected.toPlanar"></a></p>
+
+<h3>fbnn.LocallyConnected.toPlanar(tensor, make_contiguous)</h3>
+
+<p>Inverse operation of toInterleaved.</p>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/LocallyConnected.lua#L192">[src]</a>
+<a name="fbnn.LocallyConnected:type"></a></p>
+
+<h3>fbnn.LocallyConnected:type(type)</h3>
+
+<p>Type conversion.
+The trick here is to convert the various tensors to and from
+cuda layout when a conversion to or from host to GPU takes place.</p>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.LocallyConnected"></a></p>
+
+<ul>
+<li><code>fbnn.LocallyConnected(nInputPlane, iW, iH, nOutputPlane, kW, kH,
+                             dW, dH)</code>
+<a name="fbnn.LocallyConnected:outputSize"></a></li>
+<li><code>fbnn.LocallyConnected:outputSize()</code>
+<a name="fbnn.LocallyConnected:reset"></a></li>
+<li><code>fbnn.LocallyConnected:reset(stdv)</code>
+<a name="fbnn.LocallyConnected:updateOutput"></a></li>
+<li><code>fbnn.LocallyConnected:updateOutput(input)</code>
+<a name="fbnn.LocallyConnected:updateGradInput"></a></li>
+<li><code>fbnn.LocallyConnected:updateGradInput(input, gradOutput)</code>
+<a name="fbnn.LocallyConnected:accGradParameters"></a></li>
+<li><code>fbnn.LocallyConnected:accGradParameters(input, gradOutput, scale)</code></li>
+</ul>

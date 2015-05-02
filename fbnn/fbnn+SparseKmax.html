@@ -1,0 +1,63 @@
+<h3>SparseKmax.lua</h3>
+
+<p>Copyright 2004-present Facebook. All Rights Reserved.</p>
+
+<p><a name="fbnn.SparseKmax.dok"></a></p>
+
+<h2>fbnn.SparseKmax</h2>
+
+<p>This module performs a sparse embedding with the following process:</p>
+
+<ol>
+<li>Perform a dense embedding</li>
+<li>Apply a linear transformation (to high dimensional space)</li>
+<li>Make the output k-sparse</li>
+</ol>
+
+<p>The parameters of the dense embedding and the linear transformation are 
+learned. Since the fprop may be slow, we keep a candidate set for each word
+which consists of the most likely indices to be turned on after the k-max
+operation. We record the number of activations for each member of this set,
+and periodically resize it to keep only the most active indices. 
+Thus the initial training with large candidate sets will be slow, but will
+get faster and faster as we restrict their sizes.</p>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/SparseKmax.lua#L31">[src]</a>
+<a name="fbnn.SparseKmax"></a></p>
+
+<h3>fbnn.SparseKmax(vocabSize,nDenseDim,nSparseDim,k,nCandidates)</h3>
+
+<p>Parameters:</p>
+
+<ul>
+<li><code>vocabSize</code> - number of entries in the dense lookup table</li>
+<li><code>nDenseDim</code> - number of dimensions for initial dense embedding</li>
+<li><code>nSparseDim</code> - number of dimensions for final sparse embedding</li>
+<li><code>k</code> - number of nonzeros in sparse space</li>
+<li><code>nCandidates</code> - initial size of the candidate set</li>
+</ul>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/SparseKmax.lua#L93">[src]</a>
+<a name="fbnn.SparseKmax:updateCandidateSets"></a></p>
+
+<h3>fbnn.SparseKmax:updateCandidateSets(nCandidates)</h3>
+
+<p>Update the candidate set based on the counts of activations.
+<code>nCandidates</code> is the size of the new candidate sets.</p>
+
+<p><a class="entityLink" href="https://github.com/facebook/fbnn/blob/5dc9bb691436a7687026f4f39b2eea1c0b523ae8/fbnn/SparseKmax.lua#L110">[src]</a>
+<a name="fbnn.SparseKmax:accUpdateGradParameters"></a></p>
+
+<h3>fbnn.SparseKmax:accUpdateGradParameters(input, gradOutput, lr)</h3>
+
+<p>Note, we assume <code>gradOutput</code> is sparse since the output is sparse as well.</p>
+
+<h4>Undocumented methods</h4>
+
+<p><a name="fbnn.SparseKmax:reset"></a></p>
+
+<ul>
+<li><code>fbnn.SparseKmax:reset(stdv)</code>
+<a name="fbnn.SparseKmax:updateOutput"></a></li>
+<li><code>fbnn.SparseKmax:updateOutput(input)</code></li>
+</ul>
