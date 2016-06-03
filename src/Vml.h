@@ -7,7 +7,7 @@
 #define DEEPLEARNING_TORCH_VML_H_
 
 #include <mkl.h>
-#include "folly/Preprocessor.h"
+#include <folly/Preprocessor.h>
 
 namespace facebook { namespace deeplearning { namespace torch { namespace vml {
 

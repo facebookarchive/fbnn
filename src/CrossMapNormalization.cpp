@@ -8,15 +8,20 @@
 #include <memory>
 
 #include <lua.hpp>
+#include <mkl.h>
 #include <luaT.h>
 
 #include "Blas.h"
-#include "LuaUtils.h"
-#include "Tensor.h"
+#include "fblualib/LuaUtils.h"
+#include "thpp/Storage.h"
+#include "thpp/Tensor.h"
 #include "Vml.h"
-#include "folly/Format.h"
+#include <folly/Format.h>
 
 namespace facebook { namespace deeplearning { namespace torch {
+
+using namespace thpp;
+using namespace fblualib;
 
 namespace {
 
@@ -25,7 +30,7 @@ namespace {
 // Compute output[i] = sum(fn(input[j])) for j s.t. |i - j| <= kernelSize
 // It's equivalent to a 1d convolution (along the first dimension of input) of
 // fn(input) with a kernelSize-sized kernel made up of all ones along the first
-// dimension of input.
+// dimension of input->
 template <class T, class F>
 void convolve(const Tensor<T>& input,
               Tensor<T>& output,
@@ -152,27 +157,27 @@ int updateOutput(lua_State* L) {
 
   scale /= kernelSize;
 
-  int ndims = input.ndims();
+  int ndims = input->ndims();
   if (ndims != 3 && ndims != 4) {
     luaL_error(L, "Invalid input tensor dimension");
   }
 
-  output.resizeAs(input);
+  output->resizeAs(*input);
 
   if (ndims == 4) {
     // batched: the first dimension is the batch size
-    long batchSize = input.size(0);
+    long batchSize = input->size(0);
     Tensor<T> input1;
     Tensor<T> output1;
 
     // TODO(#3821228): OpenMP
     for (long imageIdx = 0; imageIdx < batchSize; ++imageIdx) {
-      input1.select(input, 0, imageIdx);
-      output1.select(output, 0, imageIdx);
+      input1.select(*input, 0, imageIdx);
+      output1.select(*output, 0, imageIdx);
       updateOutputForImage(input1, output1, kernelSize, scale, power);
     }
   } else {
-    updateOutputForImage(input, output, kernelSize, scale, power);
+    updateOutputForImage(*input, *output, kernelSize, scale, power);
   }
 
   lua_pushvalue(L, outputIdx);
@@ -184,9 +189,9 @@ int updateOutput(lua_State* L) {
 // They're stored under the name _tmp in the Lua object at index selfIdx
 // on the stack, and created the first time through this function.
 template <class T>
-std::vector<Tensor<T>> getTempTensors(lua_State* L, int selfIdx,
-                                      int tempCount,
-                                      LongRange sizes) {
+std::vector<typename Tensor<T>::Ptr> getTempTensors(lua_State* L, int selfIdx,
+                                           int tempCount,
+                                           LongRange sizes) {
   lua_getfield(L, selfIdx, "_tmp");     // _tmp
   if (lua_isnil(L, -1)) {
     lua_pop(L, 1);                      // <empty>
@@ -199,22 +204,22 @@ std::vector<Tensor<T>> getTempTensors(lua_State* L, int selfIdx,
 
   int tableIdx = lua_gettop(L);
 
-  std::vector<Tensor<T>> tempTensors;
+  std::vector<typename Tensor<T>::Ptr> tempTensors;
   tempTensors.reserve(tempCount);
 
   for (int i = 1; i <= tempCount; ++i) {
-    Tensor<T> tensor {TensorInvalid()};
+    typename Tensor<T>::Ptr tensor;
     lua_rawgeti(L, tableIdx, i);
     if (lua_isnil(L, -1)) {
       lua_pop(L, 1);
-      tensor = Tensor<T>();
+      tensor = Tensor<T>::makePtr();
       luaPushTensor(L, tensor);
       lua_rawseti(L, tableIdx, i);
     } else {
       tensor = luaGetTensorChecked<T>(L, -1);
       lua_pop(L, 1);
     }
-    tensor.resize(sizes);
+    tensor->resize(sizes);
     tempTensors.push_back(std::move(tensor));
   }
 
@@ -230,14 +235,14 @@ void updateGradInputForImage(
     int kernelSize,
     T scale,
     T power,
-    std::vector<Tensor<T>>& tmpTensors) {
+    std::vector<typename Tensor<T>::Ptr>& tmpTensors) {
   const T* input = inputTensor.data();
   const T* gradOutput = gradOutputTensor.data();
   T* gradInput = gradInputTensor.data();
   long n = inputTensor.size();
 
   // d[j] = 1 + scale * sum(x[k] ** 2), for k s.t |k-j| <= kernelSize
-  auto& dTensor = tmpTensors[0];
+  auto& dTensor = *tmpTensors[0];
   auto d = dTensor.data();
   computeDenominator(inputTensor, dTensor, kernelSize, scale);
 
@@ -246,7 +251,7 @@ void updateGradInputForImage(
   // compute s = d ** (-power)
   //         d = s / d * x
 
-  auto& sTensor = tmpTensors[1];
+  auto& sTensor = *tmpTensors[1];
   auto s = sTensor.data();
   vml::powx(n, d, -power, s);
   vml::mul(n, gradOutput, s, s);
@@ -281,34 +286,34 @@ int updateGradInput(lua_State* L) {
 
   scale /= kernelSize;
 
-  int ndims = input.ndims();
+  int ndims = input->ndims();
   if (ndims != 3 && ndims != 4) {
     luaL_error(L, "Invalid input tensor dimension");
   }
 
-  gradInput.resizeAs(input);
+  gradInput->resizeAs(*input);
 
-  LongRange tmpTensorDim = input.sizes();
+  LongRange tmpTensorDim = input->sizes();
   if (ndims == 4) {
     tmpTensorDim.pop_front();  // first dim is batch size
   }
   auto tmpTensors = getTempTensors<T>(L, 1, 2, tmpTensorDim);
 
   if (ndims == 4) {
-    long batchSize = input.size(0);
+    long batchSize = input->size(0);
     Tensor<T> input1;
     Tensor<T> gradOutput1;
     Tensor<T> gradInput1;
 
     for (long imageIdx = 0; imageIdx < batchSize; ++imageIdx) {
-      input1.select(input, 0, imageIdx);
-      gradOutput1.select(gradOutput, 0, imageIdx);
-      gradInput1.select(gradInput, 0, imageIdx);
+      input1.select(*input, 0, imageIdx);
+      gradOutput1.select(*gradOutput, 0, imageIdx);
+      gradInput1.select(*gradInput, 0, imageIdx);
       updateGradInputForImage(input1, gradOutput1, gradInput1,
                               kernelSize, scale, power, tmpTensors);
     }
   } else {
-    updateGradInputForImage(input, gradOutput, gradInput, kernelSize, scale,
+    updateGradInputForImage(*input, *gradOutput, *gradInput, kernelSize, scale,
                             power, tmpTensors);
   }
 

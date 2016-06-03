@@ -2,7 +2,7 @@
 
 local SparseConverter, parent = torch.class('nn.SparseConverter','nn.Module')
 
-
+local sparse = require 'sparse'
 
 --[[
 Parameters:
@@ -13,9 +13,9 @@ Parameters:
 ]]
 function SparseConverter:__init(fconv,bconv,dim,thresh)
   parent.__init(self)
-  if fconv == 'DtoS' and bconv == 'DtoS' 
-    or fconv == 'StoD' and bconv == 'StoD' then 
-    error('incompatible transformations') 
+  if fconv == 'DtoS' and bconv == 'DtoS'
+    or fconv == 'StoD' and bconv == 'StoD' then
+    error('incompatible transformations')
   end
   self.dim = dim
   self.fconv = fconv
@@ -44,4 +44,3 @@ function SparseConverter:updateGradInput(input, gradOutput)
   end
   return self.gradInput
 end
-

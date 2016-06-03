@@ -9,17 +9,24 @@
 #include <lua.hpp>
 #include <mkl.h>
 #include <luaT.h>
+#ifndef __clang__
 #include <omp.h>
+#endif
+
+#include "fblualib/LuaUtils.h"
+#include "thpp/Storage.h"
+#include "thpp/Tensor.h"
 
 #include "Blas.h"
-#include "torch/fb/fbcunn/src/LuaUtils.h"
-#include "torch/fb/fbcunn/src/Tensor.h"
 #include "Vml.h"
 #include <folly/Format.h>
 
 namespace facebook {
 namespace deeplearning {
 namespace torch {
+
+using namespace fblualib;
+using namespace thpp;
 
 namespace {
 
@@ -31,23 +38,24 @@ int updateOutput(lua_State* L) {
   auto input     = luaGetTensorChecked<T>(L, 2);
   auto targetP   = luaGetTensorChecked<T>(L, 3);
   auto targetIdx = luaGetTensorChecked<long>(L, 4);
-  auto batchSize = targetP.size(0);
-  auto K = targetP.size(1);
-  auto nClasses = input.size(1);
-  luaL_argcheck(L, (output.ndims() == 1) && (output.size(0) == 1),
+  auto batchSize = targetP->size(0);
+  auto K = targetP->size(1);
+  auto nClasses = input->size(1);
+  luaL_argcheck(L, (output->ndims() == 1) && (output->size(0) == 1),
                 1, "output has wrong dimension");
-  luaL_argcheck(L, (input.ndims() == 2) && (input.size(0) == batchSize)
-                && (input.isContiguous()),
+  luaL_argcheck(L, (input->ndims() == 2) && (input->size(0) == batchSize)
+                && (input->isContiguous()),
                 2, "input has wrong dimension");
-  luaL_argcheck(L, (targetP.ndims() == 2) && (targetP.isContiguous()),
+  luaL_argcheck(L, (targetP->ndims() == 2) && (targetP->isContiguous()),
                 3, "targetP has wrong dimension");
-  luaL_argcheck(L, (targetIdx.ndims() == 2) && (targetIdx.size(0) == batchSize)
-                && (targetIdx.size(1) == K) && (targetIdx.isContiguous()),
+  luaL_argcheck(L,
+                (targetIdx->ndims() == 2) && (targetIdx->size(0) == batchSize)
+                && (targetIdx->size(1) == K) && (targetIdx->isContiguous()),
                 3, "targetIdx has wrong dimension");
 
-  auto targetIdxData = targetIdx.data();
-  auto targetPData = targetP.data();
-  auto inputData = input.data();
+  auto targetIdxData = targetIdx->data();
+  auto targetPData = targetP->data();
+  auto inputData = input->data();
 
   T outputVal = 0.;
   for (int i = 0; i < batchSize; ++i) {
@@ -59,7 +67,7 @@ int updateOutput(lua_State* L) {
     }
   }
 
-  output.data()[0] = - outputVal;
+  output->data()[0] = - outputVal;
 
   return 0;
 }
@@ -69,23 +77,25 @@ int updateGradInput(lua_State* L) {
   auto gradInput = luaGetFieldIfTensorChecked<T>(L, 1, "gradInput");
   auto targetP   = luaGetTensorChecked<T>(L, 2);
   auto targetIdx = luaGetTensorChecked<long>(L, 3);
-  auto batchSize = targetP.size(0);
-  auto K = targetP.size(1);
-  auto nClasses = gradInput.size(1);
-  luaL_argcheck(L, (gradInput.ndims() == 2) && (gradInput.size(0) == batchSize)
-                && (gradInput.isContiguous()),
+  auto batchSize = targetP->size(0);
+  auto K = targetP->size(1);
+  auto nClasses = gradInput->size(1);
+  luaL_argcheck(L,
+                (gradInput->ndims() == 2) && (gradInput->size(0) == batchSize)
+                && (gradInput->isContiguous()),
                 1, "gradInput has wrong dimension");
-  luaL_argcheck(L, (targetP.ndims() == 2) && (targetP.isContiguous()),
+  luaL_argcheck(L, (targetP->ndims() == 2) && (targetP->isContiguous()),
                 2, "targetP has wrong dimension");
-  luaL_argcheck(L, (targetIdx.ndims() == 2) && (targetIdx.size(0) == batchSize)
-                && (targetIdx.size(1) == K) && (targetIdx.isContiguous()),
+  luaL_argcheck(L,
+                (targetIdx->ndims() == 2) && (targetIdx->size(0) == batchSize)
+                && (targetIdx->size(1) == K) && (targetIdx->isContiguous()),
                 2, "targetIdx has wrong dimension");
 
-  auto targetIdxData = targetIdx.data();
-  auto targetPData = targetP.data();
-  auto gradInputData = gradInput.data();
+  auto targetIdxData = targetIdx->data();
+  auto targetPData = targetP->data();
+  auto gradInputData = gradInput->data();
 
-  gradInput.zero();
+  gradInput->zero();
   for (int i = 0; i < batchSize; ++i) {
     auto targetIdxBatch = targetIdxData + i*K;
     auto targetPBatch = targetPData + i*K;

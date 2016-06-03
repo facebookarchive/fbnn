@@ -9,7 +9,7 @@
 #ifdef USE_MKL
 #include <mkl.h>
 #endif
-#include "folly/Preprocessor.h"
+#include <folly/Preprocessor.h>
 
 namespace facebook { namespace deeplearning { namespace torch { namespace blas {
 

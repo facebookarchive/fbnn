@@ -13,6 +13,7 @@ void initKMaxPooling(lua_State* L);
 void initGroupKMaxPooling(lua_State* L);
 void initHSM(lua_State* L);
 void initSparseNLLCriterion(lua_State* L);
+void initWeightedLookupTable(lua_State* L);
 
 }}}  // namespace
 
@@ -25,5 +26,6 @@ extern "C" int LUAOPEN(lua_State* L) {
   initGroupKMaxPooling(L);
   initHSM(L);
   initSparseNLLCriterion(L);
+  initWeightedLookupTable(L);
   return 0;
 }

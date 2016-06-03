@@ -9,6 +9,29 @@ local util = require('fb.util')
 
 local dprint = require('fb.util.dbg').new('CLuT')
 
+-- return weight[row] by reference
+local function readLutRow(self, row)
+    return self.weight:select(1, row)
+end
+
+-- weight[row] := val
+local function writeLutRow(self, row, val)
+    local lval = self.weight:select(1, row)
+    lval:copy(val)
+end
+
+-- weight[row] += val
+local function updateLutRow(self, row, val, alpha)
+    local alpha = alpha or 1.0
+    return self.weight:select(1, row):add(alpha, val)
+end
+
+local function updateLutRows(self, rows, val, alpha)
+    for i = 1,rows:size(1) do
+        updateLutRow(self, rows[i], val[i], alpha)
+    end
+end
+
 -- A way is a fully associative portion of the cache, with fixed
 -- capacity. Since we search it by brute-force, it needs to be
 -- modestly sized.
@@ -69,8 +92,8 @@ function Way:_writeBackOne(row)
     if self.bufferedGrads[row] then
         assert(self.rows[row]) -- invariant
         dprint("updating row", row)
-        self.backing:updateRow(row, self.bufferedGrads[row])
-        dprint("after update", row, self.backing:readRow(row))
+        updateLutRow(self.backing, row, self.bufferedGrads[row])
+        dprint("after update", row, readLutRow(self.backing, row))
         self.bufferedGrads[row] = nil
     end
     assert(not self.bufferedGrads[row])
@@ -132,11 +155,12 @@ function Way:pull(row)
     self:_incStat('miss')
     self:trim()
     assert(self.numRows < self.size)
-    self.rows[row] = self.backing:readRow(row):clone()
+    self.rows[row] = readLutRow(self.backing, row):clone()
     self.numRows = self.numRows + 1
     assert(not self.bufferedGrads[row])
     return self.rows[row]
 end
+
 
 -- The lookup table itself is a hash table of Ways.
 local CachingLookupTable, parent = torch.class('nn.CachingLookupTable',
@@ -226,7 +250,7 @@ function CachingLookupTable:updateRow(row, val, lr)
 end
 
 function CachingLookupTable:updateRows(rows, val)
-    self.backing:updateRows(rows, val)
+    updateLutRows(self.backing, rows, val)
 end
 
 function CachingLookupTable:updateOutput(input)

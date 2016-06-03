@@ -11,14 +11,19 @@
 #include <mkl.h>
 #include <luaT.h>
 
+#include "fblualib/LuaUtils.h"
+#include "thpp/Storage.h"
+#include "thpp/Tensor.h"
+
 #include "Blas.h"
-#include "torch/fb/fbcunn/src/LuaUtils.h"
-#include "torch/fb/fbcunn/src/Tensor.h"
 #include "Vml.h"
 #include <folly/Format.h>
 #include <cassert>
 
 namespace facebook { namespace deeplearning { namespace torch {
+
+using namespace fblualib;
+using namespace thpp;
 
 namespace {
 
@@ -67,20 +72,20 @@ int updateOutput(lua_State* L) {
   int dW = luaGetFieldIfNumberChecked<int>(L, 1, "dW");
   int dH = luaGetFieldIfNumberChecked<int>(L, 1, "dH");
 
-  if (input.ndims() == 4) {
+  if (input->ndims() == 4) {
     // batched: the first dimension is the batch size
-    long batchSize = input.size(0);
+    long batchSize = input->size(0);
     Tensor<T> input1;
     Tensor<T> output1;
 
     for (long batchIdx = 0; batchIdx < batchSize; ++batchIdx) {
-      input1.select(input, 0, batchIdx);
-      output1.select(output, 0, batchIdx);
-      updateOutput1(input1, weight, bias, output1, dW, dH);
+      input1.select(*input, 0, batchIdx);
+      output1.select(*output, 0, batchIdx);
+      updateOutput1(input1, *weight, *bias, output1, dW, dH);
     }
   } else {
     // resize output tensor
-    updateOutput1(input, weight, bias, output, dW, dH);
+    updateOutput1(*input, *weight, *bias, *output, dW, dH);
   }
 
   // push copy of stack location 'outputIdx' onto the stack
@@ -138,20 +143,20 @@ int updateGradInput(lua_State* L) {
   int dW = luaGetFieldIfNumberChecked<int>(L, 1, "dW");
   int dH = luaGetFieldIfNumberChecked<int>(L, 1, "dH");
 
-  gradInput.resizeAs(input);
-  if (input.ndims() == 4) { // batch
+  gradInput->resizeAs(*input);
+  if (input->ndims() == 4) { // batch
     // batched: the first dimension is the batch size
-    long batchSize = input.size(0);
+    long batchSize = input->size(0);
     Tensor<T> gradInput1;
     Tensor<T> gradOutput1;
 
     for (long batchIdx = 0; batchIdx < batchSize; ++batchIdx) {
-      gradOutput1.select(gradOutput, 0, batchIdx);
-      gradInput1.select(gradInput, 0, batchIdx);
-      updateGradInput1(gradOutput1, weight, gradInput1, dW, dH);
+      gradOutput1.select(*gradOutput, 0, batchIdx);
+      gradInput1.select(*gradInput, 0, batchIdx);
+      updateGradInput1(gradOutput1, *weight, gradInput1, dW, dH);
     }
   } else { // non-batched
-    updateGradInput1(gradOutput, weight, gradInput, dW, dH);
+    updateGradInput1(*gradOutput, *weight, *gradInput, dW, dH);
   }
 
   lua_pushvalue(L, gradInputIdx);
@@ -207,20 +212,20 @@ int accGradParameters(lua_State* L) {
   int dW = luaGetFieldIfNumberChecked<int>(L, 1, "dW");
   int dH = luaGetFieldIfNumberChecked<int>(L, 1, "dH");
 
-  if (input.ndims() == 4) { // batch
+  if (input->ndims() == 4) { // batch
     // batched: the first dimension is the batch size
-    long batchSize = input.size(0);
+    long batchSize = input->size(0);
     Tensor<T> input1;
     Tensor<T> gradOutput1;
 
     for (long batchIdx = 0; batchIdx < batchSize; ++batchIdx) {
-      input1.select(input, 0, batchIdx);
-      gradOutput1.select(gradOutput, 0, batchIdx);
-      accGradParameters1(input1, gradOutput1, scale, gradWeight, gradBias,
+      input1.select(*input, 0, batchIdx);
+      gradOutput1.select(*gradOutput, 0, batchIdx);
+      accGradParameters1(input1, gradOutput1, scale, *gradWeight, *gradBias,
                          dW, dH);
     }
   } else { // non-batched
-    accGradParameters1(input, gradOutput, scale, gradWeight, gradBias,
+    accGradParameters1(*input, *gradOutput, scale, *gradWeight, *gradBias,
                        dW, dH);
   }
   return 0;

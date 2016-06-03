@@ -15,10 +15,14 @@
 #define BOOST_DISABLE_ASSERTS
 #include <boost/multi_array.hpp>
 
-#include "torch/fb/fbcunn/src/LuaUtils.h"
-#include "torch/fb/fbcunn/src/Tensor.h"
+#include "fblualib/LuaUtils.h"
+#include "thpp/Storage.h"
+#include "thpp/Tensor.h"
 
 namespace facebook { namespace deeplearning { namespace torch {
+
+using namespace fblualib;
+using namespace thpp;
 
 namespace {
 
@@ -153,45 +157,46 @@ int updateOutput(lua_State* L) {
   int outputIdx = lua_gettop(L);
 
   luaL_argcheck(L,
-    input_tensor.ndims() == 2 || input_tensor.ndims() == 3,
+    input_tensor->ndims() == 2 || input_tensor->ndims() == 3,
     1,
     "input must have 2 or 3 dimensions.");
 
 
   // Set k for dynamic k-max pooling
   if (k_dynamic > 0) {
-    int sentence_dim = input_tensor.ndims() - 2;
-    k = std::max(k, static_cast<long>(k_dynamic * input_tensor.size(sentence_dim)));
+    int sentence_dim = input_tensor->ndims() - 2;
+    k = std::max(
+        k, static_cast<long>(k_dynamic * input_tensor->size(sentence_dim)));
   }
 
-  if (input_tensor.ndims() == 2) {
-    output_tensor.resize(LongStorage{k, input_tensor.size(1)});
-    switches_tensor.resize(LongStorage{k});
-    output_tensor.fill(0.0);
-    switches_tensor.fill(0);
+  if (input_tensor->ndims() == 2) {
+    output_tensor->resize(LongStorage{k, input_tensor->size(1)});
+    switches_tensor->resize(LongStorage{k});
+    output_tensor->fill(0.0);
+    switches_tensor->fill(0);
 
     updateOutput_single(
-      input_tensor,
-      norms_tensor,
-      switches_tensor,
-      output_tensor,
+      *input_tensor,
+      *norms_tensor,
+      *switches_tensor,
+      *output_tensor,
       k);
   }
   else {
-    output_tensor.resize(
-      LongStorage{input_tensor.size(0), k, input_tensor.size(2)});
-    switches_tensor.resize(
-      LongStorage{input_tensor.size(0), k});
-    output_tensor.fill(0.0);
-    switches_tensor.fill(0);
+    output_tensor->resize(
+      LongStorage{input_tensor->size(0), k, input_tensor->size(2)});
+    switches_tensor->resize(
+      LongStorage{input_tensor->size(0), k});
+    output_tensor->fill(0.0);
+    switches_tensor->fill(0);
 
     #pragma omp parallel for
-    for (int i = 0; i < input_tensor.size(0); ++i) {
+    for (int i = 0; i < input_tensor->size(0); ++i) {
       // Copy meta-data but not real-data
-      Tensor<T> input_tensor_example = input_tensor;
-      Tensor<T> norms_tensor_example = norms_tensor;
-      Tensor<long> switches_tensor_example = switches_tensor;
-      Tensor<T> output_tensor_example = output_tensor;
+      Tensor<T> input_tensor_example = *input_tensor;
+      Tensor<T> norms_tensor_example = *norms_tensor;
+      Tensor<long> switches_tensor_example = *switches_tensor;
+      Tensor<T> output_tensor_example = *output_tensor;
 
       // Narrow to the current example
       input_tensor_example.select(0, i);
@@ -214,7 +219,7 @@ int updateOutput(lua_State* L) {
 
 // Backprop for a single example
 template<typename T>
-void updateGradInput_singe(
+void updateGradInput_single(
   Tensor<T> const& gradOutput_tensor,
   Tensor<long> const& switches_tensor,
   Tensor<T>& gradInput_tensor) {
@@ -243,34 +248,34 @@ int updateGradInput(lua_State* L) {
   int gradInputIdx = lua_gettop(L);
 
   luaL_argcheck(L,
-    gradOutput_tensor.ndims() == 2 || gradOutput_tensor.ndims() == 3,
+    gradOutput_tensor->ndims() == 2 || gradOutput_tensor->ndims() == 3,
     1,
     "gradOutput must have exactly 2 or 3 dimensions.");
 
-  gradInput_tensor.resizeAs(input_tensor);
-  gradInput_tensor.fill(0.0);
+  gradInput_tensor->resizeAs(*input_tensor);
+  gradInput_tensor->fill(0.0);
 
-  if (gradOutput_tensor.ndims() == 2) {
-    updateGradInput_singe(
-      gradOutput_tensor,
-      switches_tensor,
-      gradInput_tensor);
+  if (gradOutput_tensor->ndims() == 2) {
+    updateGradInput_single(
+      *gradOutput_tensor,
+      *switches_tensor,
+      *gradInput_tensor);
   }
   else {
 
     #pragma omp parallel for
-    for (int i = 0; i < gradOutput_tensor.size(0); ++i) {
+    for (int i = 0; i < gradOutput_tensor->size(0); ++i) {
       // Copy meta-data but not real-data
-      Tensor<T> gradOutput_tensor_example = gradOutput_tensor;
-      Tensor<long> switches_tensor_example = switches_tensor;
-      Tensor<T> gradInput_tensor_example = gradInput_tensor;
+      Tensor<T> gradOutput_tensor_example = *gradOutput_tensor;
+      Tensor<long> switches_tensor_example = *switches_tensor;
+      Tensor<T> gradInput_tensor_example = *gradInput_tensor;
 
       // Narrow to the current example
       gradOutput_tensor_example.select(0, i);
       switches_tensor_example.select(0, i);
       gradInput_tensor_example.select(0, i);
 
-      updateGradInput_singe(
+      updateGradInput_single(
         gradOutput_tensor_example,
         switches_tensor_example,
         gradInput_tensor_example);

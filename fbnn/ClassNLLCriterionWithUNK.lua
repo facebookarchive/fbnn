@@ -33,7 +33,7 @@ function ClassNLLCriterionWithUNK:updateOutput(input, target)
     local n = 0
     if input:dim() == 1 then
         if ((type(target) == 'number') and (target ~= self.unk_index)) or
-           ((type(target) ~= 'number') and (taget[1] ~= self.unk_index))
+           ((type(target) ~= 'number') and (target[1] ~= self.unk_index))
         then
            self.output = self.crit:updateOutput(input, target)
            n = 1
@@ -71,7 +71,7 @@ end
 function ClassNLLCriterionWithUNK:updateGradInput(input, target)
     if input:dim() == 1 then
         if ((type(target) == 'number') and (target ~= self.unk_index)) or
-           ((type(target) ~= 'number') and (taget[1] ~= self.unk_index))
+           ((type(target) ~= 'number') and (target[1] ~= self.unk_index))
         then
             self.gradInput = self.crit:updateGradInput(input, target)
         end

@@ -58,12 +58,9 @@ function Optim:__init(model, optState, checkpoint_data)
     -- each parameter tensor. self.modulesToOptState maps each module to
     -- a lua table of optState clones.
     if not checkpoint_data then
-        self.model:for_each(function(module)
+        self.model:apply(function(module)
             self.modulesToOptState[module] = { }
             local params = self.weight_bias_parameters(module)
-            -- expects either an empty table or 2 element table, one for weights
-            -- and one for biases
-            assert(pl.tablex.size(params) == 0 or pl.tablex.size(params) == 2)
             for i, _ in ipairs(params) do
                 self.modulesToOptState[module][i] = deepcopy(optState)
                 if params[i] and params[i].is_bias then
@@ -77,7 +74,7 @@ function Optim:__init(model, optState, checkpoint_data)
     else
         local state = checkpoint_data.optim_state
         local modules = {}
-        self.model:for_each(function(m) table.insert(modules, m) end)
+        self.model:apply(function(m) table.insert(modules, m) end)
         assert(pl.tablex.compare_no_order(modules, pl.tablex.keys(state)))
         self.modulesToOptState = state
     end
@@ -103,7 +100,7 @@ local function _type_all(obj, t)
 end
 
 function Optim:type(t)
-    self.model:for_each(function(module)
+    self.model:apply(function(module)
         local state= self.modulesToOptState[module]
         assert(state)
         _type_all(state, t)
@@ -148,6 +145,14 @@ function Optim:optimize(optimMethod, inputs, targets, criterion)
     local df_do = criterion:backward(output, targets)
     self.model:backward(inputs, df_do)
 
+    self:updateParameters(optimMethod, err)
+
+    return err, output
+end
+
+function Optim:updateParameters(optimMethod, err)
+    assert(self.modulesToOptState)
+
     -- We'll set these in the loop that iterates over each module. Get them
     -- out here to be captured.
     local curGrad
@@ -159,10 +164,6 @@ function Optim:optimize(optimMethod, inputs, targets, criterion)
     for curMod, opt in pairs(self.modulesToOptState) do
         on_device_for_module(curMod, function()
             local curModParams = self.weight_bias_parameters(curMod)
-            -- expects either an empty table or 2 element table, one for weights
-            -- and one for biases
-            assert(pl.tablex.size(curModParams) == 0 or
-                   pl.tablex.size(curModParams) == 2)
             if curModParams then
                 for i, tensor in ipairs(curModParams) do
                     if curModParams[i] then
@@ -175,8 +176,6 @@ function Optim:optimize(optimMethod, inputs, targets, criterion)
             end
         end)
     end
-
-    return err, output
 end
 
 function Optim:setParameters(newParams)

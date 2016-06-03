@@ -1,4 +1,5 @@
 -- Copyright 2004-present Facebook. All Rights Reserved.
+local sparse = require 'sparse'
 
 -- Sum module for sparse vectors.
 local SparseSum, parent = torch.class('nn.SparseSum','nn.Module')
@@ -19,9 +20,8 @@ end
 
 function SparseSum:updateGradInput(input, gradOutput)
   self.gradInput:resize(input:size(1),gradOutput:size(1),2)
-  for i = 1,input:size(1) do 
+  for i = 1,input:size(1) do
     self.gradInput[i]:copy(gradOutput)
   end
   return self.gradInput
 end
-

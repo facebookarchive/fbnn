@@ -193,18 +193,17 @@ end
 -- cuda layout when a conversion to or from host to GPU takes place.
 function LocallyConnected:type(type)
    -- requesting type
-   if not type then
-      return nn.Module.type(self)
-   end
+   assert(type, 'Module: must provide a type to convert to')
 
    -- converting to or from a CUDA tensor data-layout must be adjusted...
-   if self:type() == 'torch.CudaTensor' and type ~= 'torch.CudaTensor' then
+   if torch.type(self.weight) == 'torch.CudaTensor' and type ~= 'torch.CudaTensor' then
       -- if going from CUDA to host type convert toPlanar(...)
       self.weight = self.toPlanar(self.weight, true)
       self.gradWeight = self.toPlanar(self.gradWeight, true)
       self.bias = self.toPlanar(self.bias, true)
       self.gradBias = self.toPlanar(self.gradBias, true)
-   elseif self:type() ~= 'torch.CudaTensor' and type == 'torch.CudaTensor' then
+   elseif torch.type(self.weight) ~= 'torch.CudaTensor'
+   and type == 'torch.CudaTensor' then
       -- if going from host type to CUDA convert toInterleaved(...)
       self.weight = self.toInterleaved(self.weight, true)
       self.gradWeight = self.toInterleaved(self.gradWeight, true)
@@ -212,5 +211,5 @@ function LocallyConnected:type(type)
       self.gradBias = self.toInterleaved(self.gradBias, true)
    end
 
-   return nn.Module.type(self, type)
+   return torch.type(self.weight)
 end

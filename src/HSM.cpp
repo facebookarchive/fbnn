@@ -9,17 +9,24 @@
 #include <lua.hpp>
 #include <mkl.h>
 #include <luaT.h>
+#ifndef __clang__
 #include <omp.h>
+#endif
 
 #include "Blas.h"
-#include "torch/fb/fbcunn/src/LuaUtils.h"
-#include "torch/fb/fbcunn/src/Tensor.h"
 #include "Vml.h"
 #include <folly/Format.h>
+
+#include "fblualib/LuaUtils.h"
+#include "thpp/Storage.h"
+#include "thpp/Tensor.h"
 
 namespace facebook {
 namespace deeplearning {
 namespace torch {
+
+using namespace fblualib;
+using namespace thpp;
 
 namespace {
 
@@ -39,28 +46,29 @@ int updateOutputWithTarget(lua_State* L) {
     luaGetFieldIfTensorChecked<long>(L, 1, "class_start_indices");
   auto input      = luaGetTensorChecked<T>(L, 2);
   auto target     = luaGetTensorChecked<long>(L, 3);
-  auto n_clusters = cluster_bias.size(0);
-  auto n_class    = class_bias.size(0);
-  auto batch_size = input.size(0);
-  if (input.ndims() == 1)
+  auto n_clusters = cluster_bias->size(0);
+  auto n_class    = class_bias->size(0);
+  auto batch_size = input->size(0);
+  if (input->ndims() == 1)
     batch_size = 1;
 
   T output = 0.;
   long n_valid = 0;
   T loss;
   for (int i_batch = 0; i_batch < batch_size; ++i_batch) {
-    long itarget = target.at({i_batch}) - 1; // 1based->0based
-    long cluster_target = mapping.at({itarget, 0}) - 1; // 1based->0based
-    long idx_in_cluster_target = mapping.at({itarget, 1}) - 1; // 1based->0based
-    long cluster_size = n_class_in_cluster.at({cluster_target});
-    Tensor<T> input_local = (input.ndims() == 1) ? input : input[i_batch];
+    long itarget = target->at({i_batch}) - 1; // 1based->0based
+    long cluster_target = mapping->at({itarget, 0}) - 1; // 1based->0based
+    long idx_in_cluster_target =
+      mapping->at({itarget, 1}) - 1; // 1based->0based
+    long cluster_size = n_class_in_cluster->at({cluster_target});
+    Tensor<T> input_local = (input->ndims() == 1) ? *input : (*input)[i_batch];
     // class
     //   get tensors corresponding to target
-    long istart = class_start_indices.at({cluster_target});
+    long istart = class_start_indices->at({cluster_target});
     Tensor<T> class_score_used, class_weight_used, class_bias_used;
-    class_score_used.narrow(class_score[i_batch], 0, 0, cluster_size);
-    class_weight_used.narrow(class_weight, 0, istart, cluster_size);
-    class_bias_used.narrow(class_bias, 0, istart, cluster_size);
+    class_score_used.narrow((*class_score)[i_batch], 0, 0, cluster_size);
+    class_weight_used.narrow(*class_weight, 0, istart, cluster_size);
+    class_bias_used.narrow(*class_bias, 0, istart, cluster_size);
     //   compute score (input * weight + bias)
     class_score_used.addmv(1, class_bias_used, 1,
                            class_weight_used, input_local);
@@ -73,7 +81,7 @@ int updateOutputWithTarget(lua_State* L) {
       class_logsum_local += THExpMinusApprox(maxInput - score_data[d]);
     class_logsum_local = maxInput + log(class_logsum_local);
     loss = class_logsum_local - class_score_used.at({idx_in_cluster_target});
-    class_logsum.at({i_batch}) = class_logsum_local;
+    class_logsum->at({i_batch}) = class_logsum_local;
     // output
     output += loss;
   }
@@ -96,26 +104,27 @@ int updateGradInput(lua_State* L) {
   auto class_start_indices =
     luaGetFieldIfTensorChecked<long>(L, 1, "class_start_indices");
   auto target     = luaGetTensorChecked<long>(L, 2);
-  auto n_clusters = cluster_weight.size(0);
-  auto n_class    = class_weight.size(0);
-  auto batch_size = gradInput.size(0);
-  if (gradInput.ndims() == 1)
+  auto n_clusters = cluster_weight->size(0);
+  auto n_class    = class_weight->size(0);
+  auto batch_size = gradInput->size(0);
+  if (gradInput->ndims() == 1)
     batch_size = 1;
   for (int i_batch = 0; i_batch < batch_size; ++i_batch) {
-    long itarget = target.at({i_batch}) - 1; // 1based->0based
-    long cluster_target = mapping.at({itarget, 0}) - 1; // 1based->0based
-    long idx_in_cluster_target = mapping.at({itarget, 1}) - 1; // 1based->0based
-    long cluster_size = n_class_in_cluster.at({cluster_target});
+    long itarget = target->at({i_batch}) - 1; // 1based->0based
+    long cluster_target = mapping->at({itarget, 0}) - 1; // 1based->0based
+    long idx_in_cluster_target =
+      mapping->at({itarget, 1}) - 1; // 1based->0based
+    long cluster_size = n_class_in_cluster->at({cluster_target});
     Tensor<T> gradInput_local =
-      (gradInput.ndims() == 1) ? gradInput : gradInput[i_batch];
+      (gradInput->ndims() == 1) ? *gradInput : (*gradInput)[i_batch];
     // class:
     //   get tensors corresponding to target
-    long istart = class_start_indices.at({cluster_target});
+    long istart = class_start_indices->at({cluster_target});
     Tensor<T> class_score_used, class_weight_used;
-    class_score_used.narrow(class_score[i_batch], 0, 0, cluster_size);
-    class_weight_used.narrow(class_weight, 0, istart, cluster_size);
+    class_score_used.narrow((*class_score)[i_batch], 0, 0, cluster_size);
+    class_weight_used.narrow((*class_weight), 0, istart, cluster_size);
     //   compute gradInput of the logsoftmax (into class_score)
-    T class_logsum_local = class_logsum.at({i_batch});
+    T class_logsum_local = class_logsum->at({i_batch});
     assert(class_score_used.isContiguous());
     T* score_data = class_score_used.data();
     for (int d = 0; d < cluster_size; ++d)
@@ -145,22 +154,23 @@ int accGradParameters(lua_State* L) {
   auto input      = luaGetTensorChecked<T>(L, 2);
   auto target     = luaGetTensorChecked<long>(L, 3);
   auto scale      = lua_tonumber(L, 4);
-  auto batch_size = input.size(0);
-  if (input.ndims() == 1)
+  auto batch_size = input->size(0);
+  if (input->ndims() == 1)
     batch_size = 1;
   // class:
   for (int i_batch = 0; i_batch < batch_size; ++i_batch) {
-    long itarget = target.at({i_batch}) - 1; // 1based->0based
-    long cluster_target = mapping.at({itarget, 0}) - 1; // 1based->0based
-    long idx_in_cluster_target = mapping.at({itarget, 1}) - 1; // 1based->0based
-    long cluster_size = n_class_in_cluster.at({cluster_target});
-    Tensor<T> input_local = (input.ndims() == 1) ? input : input[i_batch];
+    long itarget = target->at({i_batch}) - 1; // 1based->0based
+    long cluster_target = mapping->at({itarget, 0}) - 1; // 1based->0based
+    long idx_in_cluster_target =
+      mapping->at({itarget, 1}) - 1; // 1based->0based
+    long cluster_size = n_class_in_cluster->at({cluster_target});
+    Tensor<T> input_local = (input->ndims() == 1) ? *input : (*input)[i_batch];
     //   get tensors corresponding to target
-    long istart = class_start_indices.at({cluster_target});
+    long istart = class_start_indices->at({cluster_target});
     Tensor<T> class_score_used, class_grad_weight_used, class_grad_bias_used;
-    class_score_used.narrow(class_score[i_batch], 0, 0, cluster_size);
-    class_grad_weight_used.narrow(class_grad_weight, 0, istart, cluster_size);
-    class_grad_bias_used.narrow(class_grad_bias, 0, istart, cluster_size);
+    class_score_used.narrow((*class_score)[i_batch], 0, 0, cluster_size);
+    class_grad_weight_used.narrow(*class_grad_weight, 0, istart, cluster_size);
+    class_grad_bias_used.narrow(*class_grad_bias, 0, istart, cluster_size);
     //   accumulate gradients
     class_grad_weight_used.addr(1, scale, class_score_used, input_local);
     class_grad_bias_used.cadd(scale, class_score_used);
@@ -181,22 +191,23 @@ int accGradParameters_directUpdate(lua_State* L) {
   auto input      = luaGetTensorChecked<T>(L, 2);
   auto target     = luaGetTensorChecked<long>(L, 3);
   auto scale      = lua_tonumber(L, 4);
-  auto batch_size = input.size(0);
-  if (input.ndims() == 1)
+  auto batch_size = input->size(0);
+  if (input->ndims() == 1)
     batch_size = 1;
   // class:
   for (int i_batch = 0; i_batch < batch_size; ++i_batch) {
-    long itarget = target.at({i_batch}) - 1; // 1based->0based
-    long cluster_target = mapping.at({itarget, 0}) - 1; // 1based->0based
-    long idx_in_cluster_target = mapping.at({itarget, 1}) - 1; // 1based->0based
-    long cluster_size = n_class_in_cluster.at({cluster_target});
-    Tensor<T> input_local = (input.ndims() == 1) ? input : input[i_batch];
+    long itarget = target->at({i_batch}) - 1; // 1based->0based
+    long cluster_target = mapping->at({itarget, 0}) - 1; // 1based->0based
+    long idx_in_cluster_target =
+      mapping->at({itarget, 1}) - 1; // 1based->0based
+    long cluster_size = n_class_in_cluster->at({cluster_target});
+    Tensor<T> input_local = (input->ndims() == 1) ? *input : (*input)[i_batch];
     //   get tensors corresponding to target
-    long istart = class_start_indices.at({cluster_target});
+    long istart = class_start_indices->at({cluster_target});
     Tensor<T> class_score_used, class_weight_used, class_bias_used;
-    class_score_used.narrow(class_score[i_batch], 0, 0, cluster_size);
-    class_weight_used.narrow(class_weight, 0, istart, cluster_size);
-    class_bias_used.narrow(class_bias, 0, istart, cluster_size);
+    class_score_used.narrow((*class_score)[i_batch], 0, 0, cluster_size);
+    class_weight_used.narrow(*class_weight, 0, istart, cluster_size);
+    class_bias_used.narrow(*class_bias, 0, istart, cluster_size);
     //   accumulate gradients
     class_weight_used.addr(1, scale, class_score_used, input_local);
     class_bias_used.cadd(scale, class_score_used);
@@ -216,18 +227,19 @@ int zeroGradParametersClass(lua_State* L) {
   auto class_start_indices =
     luaGetFieldIfTensorChecked<long>(L, 1, "class_start_indices");
   auto target     = luaGetTensorChecked<long>(L, 2);
-  auto batch_size = target.size(0);
+  auto batch_size = target->size(0);
   // TODO: be smarter and 0 out only once per cluster.
   for (int i_batch = 0; i_batch < batch_size; ++i_batch) {
-    long itarget = target.at({i_batch}) - 1; // 1based->0based
-    long cluster_target = mapping.at({itarget, 0}) - 1; // 1based->0based
-    long idx_in_cluster_target = mapping.at({itarget, 1}) - 1; // 1based->0based
-    long cluster_size = n_class_in_cluster.at({cluster_target});
+    long itarget = target->at({i_batch}) - 1; // 1based->0based
+    long cluster_target = mapping->at({itarget, 0}) - 1; // 1based->0based
+    long idx_in_cluster_target =
+      mapping->at({itarget, 1}) - 1; // 1based->0based
+    long cluster_size = n_class_in_cluster->at({cluster_target});
     //   get tensors corresponding to target
-    long istart = class_start_indices.at({cluster_target});
+    long istart = class_start_indices->at({cluster_target});
     Tensor<T> class_grad_weight_used, class_grad_bias_used;
-    class_grad_weight_used.narrow(class_grad_weight, 0, istart, cluster_size);
-    class_grad_bias_used.narrow(class_grad_bias, 0, istart, cluster_size);
+    class_grad_weight_used.narrow(*class_grad_weight, 0, istart, cluster_size);
+    class_grad_bias_used.narrow(*class_grad_bias, 0, istart, cluster_size);
     //   accumulate gradients
     class_grad_weight_used.fill(0.0);
     class_grad_bias_used.fill(0.0);

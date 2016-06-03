@@ -1,7 +1,6 @@
 -- Copyright 2004-present Facebook. All Rights Reserved.
 
-local sparse = require('sparse')
-require('utils')
+local sparse = require 'sparse'
 
 --[[
 This module performs a sparse embedding with the following process:
@@ -10,11 +9,11 @@ This module performs a sparse embedding with the following process:
 2. Apply a linear transformation (to high dimensional space)
 3. Make the output k-sparse
 
-The parameters of the dense embedding and the linear transformation are 
+The parameters of the dense embedding and the linear transformation are
 learned. Since the fprop may be slow, we keep a candidate set for each word
 which consists of the most likely indices to be turned on after the k-max
 operation. We record the number of activations for each member of this set,
-and periodically resize it to keep only the most active indices. 
+and periodically resize it to keep only the most active indices.
 Thus the initial training with large candidate sets will be slow, but will
 get faster and faster as we restrict their sizes.
 ]]
@@ -67,29 +66,29 @@ function SparseKmax:updateOutput(input)
   self.dense = self.denseEmbedding:forward(input)
   self.output:resize(nInputs,self.K,2)
   -- Loop over the dense embeddings of the input words.
-  for i = 1,input:size(1) do 
+  for i = 1,input:size(1) do
     local candidates = self.candidates[input[i][1]]
     -- Copy the indices of candidates into the output.
     self.activations[{{},1}]:copy(candidates)
     self.activations[{{},2}]:zero()
     -- Compute the activations for each element of the candidate set.
     sparse.SaddMtimesDoverlap(self.weights,self.dense[i],self.activations)
-    -- Pick top k and copy the scores/indices into the output. 
+    -- Pick top k and copy the scores/indices into the output.
     -- We sort the indices since this will likely be needed later.
     local topk_val,topk_indx = torch.topk(self.activations[{{},2}],self.K)
-    local sorted_indices,sorting_indx 
+    local sorted_indices,sorting_indx
       = torch.sort(candidates:index(1,topk_indx:long()))
     self.output[{i,{},1}]:copy(sorted_indices)
     self.output[{i,{},2}]:copy(topk_val:index(1,sorting_indx))
-    -- Increment counts. 
-    for j = 1,self.K do 
+    -- Increment counts.
+    for j = 1,self.K do
       self.counts[input[i][1]][topk_indx[j]] = self.counts[input[i][1]][topk_indx[j]] + 1
     end
   end
   return self.output
 end
 
--- Update the candidate set based on the counts of activations. 
+-- Update the candidate set based on the counts of activations.
 -- `nCandidates` is the size of the new candidate sets.
 function SparseKmax:updateCandidateSets(nCandidates)
   self.nCandidates = nCandidates
@@ -129,4 +128,3 @@ function SparseKmax:accUpdateGradParameters(input, gradOutput, lr)
   -- Update the dense embedding weights.
   self.denseEmbedding:accUpdateGradParameters(input,self.gradEmbeddings,lr)
 end
-

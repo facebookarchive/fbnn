@@ -15,10 +15,14 @@
 #define BOOST_DISABLE_ASSERTS
 #include <boost/multi_array.hpp>
 
-#include "torch/fb/fbcunn/src/LuaUtils.h"
-#include "torch/fb/fbcunn/src/Tensor.h"
+#include "fblualib/LuaUtils.h"
+#include "thpp/Storage.h"
+#include "thpp/Tensor.h"
 
 namespace facebook { namespace deeplearning { namespace torch {
+
+using namespace fblualib;
+using namespace thpp;
 
 namespace {
 
@@ -102,35 +106,37 @@ int updateOutput(lua_State* L) {
   auto output_tensor = luaGetFieldIfTensorChecked<T>(L, 1, "output");
   int outputIdx = lua_gettop(L);
 
-  luaL_argcheck(L, input_tensor.ndims() == 2, 1,
+  luaL_argcheck(L, input_tensor->ndims() == 2, 1,
     "input must have exactly 2 dimensions.");
-  luaL_argcheck(L, input_length_tensor.ndims() == 1, 1,
+  luaL_argcheck(L, input_length_tensor->ndims() == 1, 1,
     "input_length must have exactly 1 dimension");
-  luaL_argcheck(L, input_length_tensor.size() == 1, 1,
+  luaL_argcheck(L, input_length_tensor->size() == 1, 1,
     "input_length must have exactly 1 element");
 
   // Set k for dynamic k-max pooling
   if (k_dynamic > 0) {
-    int sentence_dim = input_tensor.ndims() - 2;
-    k = std::max(k, static_cast<long>(k_dynamic * input_tensor.size(sentence_dim)));
+    int sentence_dim = input_tensor->ndims() - 2;
+    k = std::max(
+        k,
+        static_cast<long>(k_dynamic * input_tensor->size(sentence_dim)));
   }
 
-  output_tensor.resize(LongStorage{k, input_tensor.size(1)});
-  switches_tensor.resize(LongStorage{k, input_tensor.size(1)});
-  output_tensor.fill(0.0);
-  switches_tensor.fill(0);
+  output_tensor->resize(LongStorage{k, input_tensor->size(1)});
+  switches_tensor->resize(LongStorage{k, input_tensor->size(1)});
+  output_tensor->fill(0.0);
+  switches_tensor->fill(0);
 
-  auto input_data = tensor_array_view(input_tensor);
-  auto output_data = tensor_array_view(output_tensor);
-  auto switches_data = tensor_array_view(switches_tensor);
-  auto input_length_data = tensor_vector_view(input_length_tensor);
-  auto output_length_data = tensor_vector_view(output_length_tensor);
+  auto input_data = tensor_array_view(*input_tensor);
+  auto output_data = tensor_array_view(*output_tensor);
+  auto switches_data = tensor_array_view(*switches_tensor);
+  auto input_length_data = tensor_vector_view(*input_length_tensor);
+  auto output_length_data = tensor_vector_view(*output_length_tensor);
 
-  for (int col = 0; col < input_tensor.size(1); ++col) {
+  for (int col = 0; col < input_tensor->size(1); ++col) {
     value_priority_queue<T> kmax;
 
     // extract the k-max values with indices
-    // for (int row = 0; row < input_tensor.size(0); ++row) {
+    // for (int row = 0; row < input_tensor->size(0); ++row) {
     for (int row = 0; row < input_length_data[0]; ++row) {
       T value = input_data[row][col];
 
@@ -198,25 +204,25 @@ int updateGradInput(lua_State* L) {
   auto gradInput_tensor = luaGetFieldIfTensorChecked<T>(L, 1, "gradInput");
   int gradInputIdx = lua_gettop(L);
 
-  luaL_argcheck(L, gradOutput_tensor.ndims() == 2, 1,
+  luaL_argcheck(L, gradOutput_tensor->ndims() == 2, 1,
     "gradOutput must have exactly 2 dimensions.");
-  luaL_argcheck(L, input_length_tensor.ndims() == 1, 1,
+  luaL_argcheck(L, input_length_tensor->ndims() == 1, 1,
     "input_length must have exactly 1 dimension");
-  luaL_argcheck(L, input_length_tensor.size() == 1, 1,
+  luaL_argcheck(L, input_length_tensor->size() == 1, 1,
     "input_length must have exactly 1 element");
 
-  long output_length = output_length_tensor.front();
+  long output_length = output_length_tensor->front();
 
-  gradInput_tensor.resizeAs(input);
-  gradInput_tensor.fill(0.0);
+  gradInput_tensor->resizeAs(*input);
+  gradInput_tensor->fill(0.0);
 
-  auto gradInput_data = tensor_array_view(gradInput_tensor);
-  auto const gradOutput_data = tensor_array_view(gradOutput_tensor);
-  auto const switches_data = tensor_array_view(switches_tensor);
+  auto gradInput_data = tensor_array_view(*gradInput_tensor);
+  auto const gradOutput_data = tensor_array_view(*gradOutput_tensor);
+  auto const switches_data = tensor_array_view(*switches_tensor);
 
-  long row_limit = std::min(output_length, gradOutput_tensor.size(0));
+  long row_limit = std::min(output_length, gradOutput_tensor->size(0));
   for (int row = 0; row < row_limit; ++row) {
-    for (int col = 0; col < gradOutput_tensor.size(1); ++col) {
+    for (int col = 0; col < gradOutput_tensor->size(1); ++col) {
       long input_row = switches_data[row][col];
       gradInput_data[input_row][col] = gradOutput_data[row][col];
     }
