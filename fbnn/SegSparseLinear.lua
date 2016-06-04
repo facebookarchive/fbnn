@@ -18,13 +18,23 @@ local function axpy(n, a, x, y)
   end
 end
 
-function SegSparseLinear:__init(inputSize, outputSize, learningRateMul)
+function SegSparseLinear:__init(inputSize, outputSize, useSparseGrad,
+  learningRateMul)
   self.weight = torch.zeros(outputSize, inputSize) -- will be transposed
   self.bias = torch.zeros(outputSize)
   self.output = torch.zeros(outputSize)
-  self.gradWeight = torch.zeros(inputSize, outputSize)
+  -- sparse gradient of weight
+  self.sparseGradWeightPtr = {}
+  self._sparseBuf = torch.zeros(outputSize)
+  -- using sparse gradient will be a bit slower (D3376618)
+  self.useSparseGrad = useSparseGrad or false
+  if not self.useSparseGrad then
+    self.gradWeight = torch.zeros(inputSize, outputSize)
+  end
+
   self.gradBias = torch.zeros(outputSize)
   self.ones = torch.ones(100000)
+
   self.learningRateMul = learningRateMul or 1
 
   self:reset()
@@ -44,6 +54,19 @@ end
 
 function SegSparseLinear:setLearningRateMul(learningRateMul)
   self.learningRateMul = learningRateMul
+end
+
+function SegSparseLinear:setUseSparseGrad(useSparseGrad)
+  if self.useSparseGrad == useSparseGrad then
+    return
+  end
+
+  if useSparseGrad then
+    self.gradWeight = nil
+  else
+    self.gradWeight = self.weight:clone():zero()
+  end
+  self.useSparseGrad = useSparseGrad
 end
 
 function SegSparseLinear:updateOutput(input)
@@ -82,8 +105,10 @@ end
 function SegSparseLinear:accGradParameters(input, gradOutput, scale)
   local segs, keys, vals = unpack(input)
 
-  assert(self.gradWeight:isContiguous() and self.gradBias:isContiguous() and
-         gradOutput:isContiguous())
+  assert(self.gradBias:isContiguous() and gradOutput:isContiguous())
+  if not self.useSparseGrad then
+    assert(self.gradWeight:isContiguous())
+  end
 
   local n = segs:numel()
   local m = self.weight:size(2)
@@ -99,16 +124,46 @@ function SegSparseLinear:accGradParameters(input, gradOutput, scale)
   local valGet  = getGetter(vals)
   local keyGet = getGetter(keys)
 
+  if self.useSparseGrad then
+    local keySet = {}
+    local cnt = 0
+    for i = 1, n do
+      local key = tonumber(keyGet(i))
+      if keySet[key] == nil then
+        keySet[key] = cnt
+        cnt = cnt + 1
+      end
+    end
+    -- the content of a Tensor after resizing is undetermined
+    -- the elements of the resized tensor are contiguous in memory
+    self._sparseBuf:resize(cnt, m):zero()
+    local sparseBufPtr = self._sparseBuf:data()
+
+    for k, v in pairs(keySet) do
+      self.sparseGradWeightPtr[k] = sparseBufPtr + v * m
+    end
+  end
+
   local gradOutputPtr = gradOutput:data()
-  local gradWeightPtr = self.gradWeight:data()
   local gradBiasPtr = self.gradBias:data()
+
+  local gradWeightPtr = self.gradWeight and self.gradWeight:data()
 
   self.lastInput = input
 
   for i = 1, n do
+    local key = tonumber(keyGet(i))
+
+    local gradWeightRowPtr
+    if self.useSparseGrad then
+      gradWeightRowPtr = self.sparseGradWeightPtr[key]
+    else
+      gradWeightRowPtr = gradWeightPtr + (key - 1) * m
+    end
+
     axpy(m, scale * valGet(i),
       gradOutputPtr + (segGet(i) - 1) * m,
-      gradWeightPtr + (keyGet(i) - 1) * m)
+      gradWeightRowPtr)
   end
 
   for i = 1, batch_size do
@@ -133,25 +188,33 @@ function SegSparseLinear:updateParameters(learningRate)
   local keyGet = getGetter(keys)
 
   local weightPtr = self.weight:data()
-  local gradWeightPtr = self.gradWeight:data()
+  local gradWeightPtr = self.gradWeight and self.gradWeight:data()
 
   local updatedKeys = {}
 
-
   for i = 1, n do
-    local key = keyGet(i)
+    local key = tonumber(keyGet(i))
     if not updatedKeys[key] then
+      local gradWeightRowPtr
+      if self.useSparseGrad then
+        gradWeightRowPtr = self.sparseGradWeightPtr[key]
+      else
+        gradWeightRowPtr = gradWeightPtr + (key - 1) * m
+      end
+
       axpy(m, -learningRate,
-        gradWeightPtr + (key - 1) * m,
+        gradWeightRowPtr,
         weightPtr + (key - 1) * m)
 
-      -- zero out gradweight here
-      local gradWeightRowPtr = gradWeightPtr + (key - 1) * m
-      for j = 0, (m - 1) do
-        gradWeightRowPtr[j] = 0
+      -- zero out dense grad here; zero out sparse grad when resizing
+      if not self.useSparseGrad then
+        for j = 0, (m - 1) do
+          gradWeightRowPtr[j] = 0
+        end
       end
       updatedKeys[key] = true
     end
+
   end
   self.bias:add(-learningRate, self.gradBias)
 
@@ -163,6 +226,7 @@ end
 
 function SegSparseLinear:zeroGradParameters()
   -- done in updateParameters. not needed here.
+  self.sparseGradWeightPtr = {}
 end
 
 function SegSparseLinear:updateGradInput(input, gradOutput)
