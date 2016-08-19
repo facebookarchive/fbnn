@@ -6,6 +6,8 @@ if not ok then
 end
 require 'nn'
 
+local precision = 1e-5
+
 local pl = require'pl.import_into'()
 
 local mytester = torch.Tester()
@@ -117,6 +119,48 @@ function fbnntest.testLoGLayer()
     assert(im:size(3) == filteredIm:size(3))
 end
 
+local function criterionJacobianTest(cri, input, target)
+   local eps = 1e-6
+   local _ = cri:forward(input, target)
+   local dfdx = cri:backward(input, target)
+   -- for each input perturbation, do central difference
+   local centraldiff_dfdx = torch.Tensor():resizeAs(dfdx)
+   local input_s = input:storage()
+   local centraldiff_dfdx_s = centraldiff_dfdx:storage()
+   for i=1,input:nElement() do
+      -- f(xi + h)
+      input_s[i] = input_s[i] + eps
+      local fx1 = cri:forward(input, target)
+      -- f(xi - h)
+      input_s[i] = input_s[i] - 2*eps
+      local fx2 = cri:forward(input, target)
+      -- f'(xi) = (f(xi + h) - f(xi - h)) / 2h
+      local cdfx = (fx1 - fx2) / (2*eps)
+      -- store f' in appropriate place
+      centraldiff_dfdx_s[i] = cdfx
+      -- reset input[i]
+      input_s[i] = input_s[i] + eps
+   end
+
+   -- compare centraldiff_dfdx with :backward()
+   local err = (centraldiff_dfdx - dfdx):abs():max()
+   print(err)
+   mytester:assertlt(err, precision,
+   'error in difference between central difference and :backward')
+end
+
+function fbnntest.testSoftPlusLSEMinusLSECriterion()
+   local input = torch.rand(10, 100)
+   local cri = nn.SoftPlusLSEMinusLSECriterion()
+   criterionJacobianTest(cri, input)
+end
+
+
+function fbnntest.testSoftPlusLSECriterion()
+   local input = torch.rand(10, 100)
+   local cri = nn.SoftPlusLSECriterion()
+   criterionJacobianTest(cri, input)
+end
 
 function fbnntest.testLoGNetwork()
 

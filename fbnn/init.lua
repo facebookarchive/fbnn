@@ -17,7 +17,8 @@ include('DataSetLabelMe.lua')
 include('LeakyReLU.lua')
 include('Constant.lua')
 include('SpatialFoveaCuda.lua')
-
+include('SoftPlusLSECriterion.lua')
+include('SoftPlusLSEMinusLSECriterion.lua')
 -- Former fbcunn.nn_layers
 include('ClassHierarchicalNLLCriterion.lua')
 include('CrossMapNormalization.lua')
