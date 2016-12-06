@@ -142,6 +142,12 @@ end
 -- we do not need to accumulate parameters when sharing
 UTC.sharedAccUpdateGradParameters = UTC.accUpdateGradParameters
 
+function UTC:clearState()
+    nn.utils.clear(self, '_paddedInput', '_paddedGradInput', '_unfoldedInput',
+        '_linearGradOutput', '_unfoldedGradInput')
+    return parent.clearState(self)
+end
+
 function UTC:test()
     local function tensoreq(a, b, epsilon)
         local delta = a:clone():add(-1, b):abs():max()
