@@ -139,8 +139,10 @@ function UTC:accGradParameters(input, gradOutput, scale)
     )
 end
 
--- we do not need to accumulate parameters when sharing
-UTC.sharedAccUpdateGradParameters = UTC.accUpdateGradParameters
+function UTC:sharedAccUpdateGradParameters(input, gradOutput, lr)
+   -- we do not need to accumulate parameters when sharing:
+   self:defaultAccUpdateGradParameters(input, gradOutput, lr)
+end
 
 function UTC:clearState()
     nn.utils.clear(self, '_paddedInput', '_paddedGradInput', '_unfoldedInput',

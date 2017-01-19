@@ -47,5 +47,7 @@ function WeightedLookupTable:accGradParameters(input, gradOutput, scale)
    parent.accGradParameters(self, indices, self._gradOutput, scale)
 end
 
--- we do not need to accumulate parameters when sharing
-WeightedLookupTable.sharedAccUpdateGradParameters = WeightedLookupTable.accUpdateGradParameters
+function WeightedLookupTable:sharedAccUpdateGradParameters(input, gradOutput, lr)
+   -- we do not need to accumulate parameters when sharing:
+   self:defaultAccUpdateGradParameters(input, gradOutput, lr)
+end
