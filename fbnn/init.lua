@@ -4,6 +4,7 @@ require('libfbnn')
 
 pcall(function() include('Dropout.lua') end) -- because uses async_rng
 include('UnfoldedTemporalConvolution.lua')
+include('TemporalConvolutionTBC.lua')
 include('NestedDropout.lua')
 include('IndividualDropout.lua')
 include('CachingLookupTable.lua')

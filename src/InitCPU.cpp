@@ -8,6 +8,7 @@
 namespace facebook { namespace deeplearning { namespace torch {
 
 void initCrossMapNormalization(lua_State* L);
+void initTemporalConvolutionTBC(lua_State* L);
 void initLocallyConnected(lua_State* L);
 void initKMaxPooling(lua_State* L);
 void initGroupKMaxPooling(lua_State* L);
@@ -21,6 +22,7 @@ using namespace facebook::deeplearning::torch;
 
 extern "C" int LUAOPEN(lua_State* L) {
   initCrossMapNormalization(L);
+  initTemporalConvolutionTBC(L);
   initLocallyConnected(L);
   initKMaxPooling(L);
   initGroupKMaxPooling(L);
