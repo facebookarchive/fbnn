@@ -17,8 +17,8 @@ function TBC:__init(nIn, nOut, kw,pad)
 
   self.weight = torch.Tensor(kw,nIn,nOut)
   self.bias = torch.Tensor(nOut)
-  self.gradWeight = torch.Tensor(kw,nIn,nOut):zero()
-  self.gradBias = torch.Tensor(nOut):zero()
+  self.gradWeight = torch.Tensor(kw,nIn,nOut)
+  self.gradBias = torch.Tensor(nOut)
   self:reset()
 end
 
@@ -29,7 +29,7 @@ function TBC:reset(stdv)
     stdv = 1/math.sqrt(self.kw*self.nIn)
   end
   self.weight:uniform(-stdv, stdv)
-  self.bias:zero()
+  self.bias:uniform(-stdv, stdv)
 end
 
 function TBC:noBias()
