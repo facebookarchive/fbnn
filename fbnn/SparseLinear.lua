@@ -77,8 +77,10 @@ end
 function SparseLinear:zeroGradParameters()
   if self.useSparseUpdate then
     if self.lastInputKey == nil and self.lastInput == nil then
-      assert(self.numBackward == 0, 'oops')
-      io.stderr:write('SparseLinear: using full zeroGrad\n')
+      if self.numBackward > 1 then
+          io.stderr:write('SparseLinear: using full zeroGrad - maybe ' ..
+              'you\'re calling backwards twice somewhere...\n')
+      end
       parent.zeroGradParameters(self)
     else
       assert(self.numBackward == 1, 'must call backward() once')
